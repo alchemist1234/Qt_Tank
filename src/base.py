@@ -131,6 +131,10 @@ class TankType(Enum):
 
 class Tank(object):
     def __init__(self, tank):
+        if isinstance(tank, Tank):
+            self.type = tank.type
+        elif isinstance(tank, TankType):
+            self.type = tank
         self.name = tank.name
         self.lives = tank.lives
         self.hit_point = tank.hit_point
@@ -157,6 +161,12 @@ class Terrain(object):
 
 class Statistics(object):
     _instance = None
+    player_1_lives = GameConfig.player_lives
+    player_2_lives = GameConfig.player_lives
+    player_1_score = 0
+    player_2_score = 0
+    player_1_kills = {}
+    player_2_kills = {}
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
@@ -164,7 +174,13 @@ class Statistics(object):
         return cls._instance
 
     def __init__(self):
-        self.player_1_lives = GameConfig.player_lives
-        self.player_2_lives = GameConfig.player_lives
-        self.player_1_score = 0
-        self.player_0_score = 0
+        pass
+
+    @classmethod
+    def reset(cls):
+        cls.player_1_lives = GameConfig.player_lives
+        cls.player_2_lives = GameConfig.player_lives
+        cls.player_1_score = 0
+        cls.player_2_score = 0
+        cls.player_1_kills = {}
+        cls.player_2_kills = {}

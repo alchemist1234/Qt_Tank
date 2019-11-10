@@ -3,13 +3,14 @@ from PySide2.QtGui import QPixmap
 from PySide2.QtWidgets import QGraphicsPixmapItem
 import random
 
-from .base import Direction, Tank, TerrainType
+from .base import Direction, Tank, TerrainType, TankType, Statistics
 from .config import GameConfig
 
 cube_size = GameConfig.cube_size
 interval = GameConfig.interval
 content_width = GameConfig.width()
 content_height = GameConfig.height()
+data = Statistics()
 
 
 class TerrainItem(QGraphicsPixmapItem):
@@ -122,6 +123,7 @@ class TankItem(QGraphicsPixmapItem):
             self.scene().addItem(ammo)
 
     def destroy(self):
+        self.scene().removeItem(self)
         pass
 
     def __str__(self):
@@ -210,12 +212,28 @@ class AmmoItem(QGraphicsPixmapItem):
                     destroy = True
             if isinstance(item, TankItem):
                 if self.tank.is_player != item.tank.is_player:
+                    if self.tank.is_player:
+                        self.score(item.tank)
                     item.destroy()
                     destroy = True
+            # todo ammo hit self destroy bug
         if destroy:
             self.destroy()
+
+    def score(self, enemy: Tank):
+        if self.tank.type == TankType.PLAYER_ONE:
+            if enemy.type in data.player_1_kills:
+                data.player_1_kills[enemy.type] += 1
+            else:
+                data.player_1_kills[enemy.type] = 1
+        elif self.tank.type == TankType.PLAYER_TWO:
+            if enemy.type in data.player_2_kills:
+                data.player_2_kills[enemy.type] += 1
+            else:
+                data.player_2_kills[enemy.type] = 1
 
     def destroy(self):
         self.available = False
         self.tank.ammo_storage += 1
-        self.scene().removeItem(self)
+        if self.scene() is not None:
+            self.scene().removeItem(self)
