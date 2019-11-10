@@ -4,6 +4,7 @@ from PySide2.QtCore import QRect
 from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsView, QWidget
 
 from src.config import GameConfig
+from src.base import GameType
 from src.scene import GameScene, StartScene, MaskScene
 
 content_height = GameConfig.height()
@@ -37,8 +38,8 @@ class MainWindow(QMainWindow):
     def enter_game_scene(self):
         self.graph_view.setScene(self.game_scene)
 
-    def start_game(self, players: int):
-        self.game_scene.start(players)
+    def start_game(self, game_type: GameType):
+        self.game_scene.start(game_type)
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ from PySide2.QtGui import QPixmap, QKeyEvent, QBrush, QFont, QPen
 from PySide2.QtWidgets import QGraphicsScene, QGraphicsTextItem, QGraphicsRectItem, QGraphicsPixmapItem
 
 from src.config import GameConfig
-from src.base import Direction, TankType, TerrainType, generate_random_map
+from src.base import Direction, GameType, TankType, TerrainType, generate_random_map
 from src.item import TankItem, EnemyItem, TerrainItem
 
 columns = GameConfig.columns
@@ -28,7 +28,7 @@ class MaskScene(QGraphicsScene):
         self.animation_timer_1 = QTimer()
         self.animation_timer_2 = QTimer()
         self.animation_timer_3 = QTimer()
-        self.selected = None
+        self.game_type = None
         self.init()
 
     def init(self):
@@ -94,16 +94,16 @@ class MaskScene(QGraphicsScene):
         self.lower_mask.setRect(0, content_height - self.mask_height, content_width, self.mask_height)
         if finished:
             self.animation_timer_3.stop()
-            self.main_window.start_game(self.selected)
+            self.main_window.start_game(self.game_type)
 
     def animation_hold(self):
         self.removeItem(self.stage_text_item)
         self.animation_timer_3.start()
         self.main_window.enter_game_scene()
 
-    def start_animation(self, selected: int):
+    def start_animation(self, game_type: GameType):
         self.animation_timer_1.start()
-        self.selected = selected
+        self.game_type = game_type
 
 
 class StartScene(QGraphicsScene):
@@ -111,6 +111,7 @@ class StartScene(QGraphicsScene):
         super().__init__()
         self.mask_scene = mask_scene
         self.y_list = [300, 400]
+        self.game_type_list = [GameType.ONE_PLAYER, GameType.TWO_PLAYERS]
         self.selected = 0
         self.stage = stage
         self.one_play_text_item = QGraphicsTextItem()
@@ -165,7 +166,7 @@ class StartScene(QGraphicsScene):
         if event.key() == Qt.Key_Space:
             if not self.start:
                 self.start = True
-                self.mask_scene.start_animation(self.selected)
+                self.mask_scene.start_animation(self.game_type_list[self.selected])
 
 
 class GameScene(QGraphicsScene):
@@ -184,11 +185,11 @@ class GameScene(QGraphicsScene):
         brush.setStyle(Qt.SolidPattern)
         self.setBackgroundBrush(brush)
 
-    def start(self, players):
+    def start(self, game_type: GameType):
         self.started = True
         self.remain_enemies = GameConfig.enemies
         self.add_tank1(self.tank1)
-        if players > 1:
+        if game_type == GameType.TWO_PLAYERS:
             self.add_tank2(self.tank2)
         self.add_enemy(EnemyItem(TankType.ENEMY_1), 0)
         self.add_enemy(EnemyItem(TankType.ENEMY_2), 6)

@@ -27,6 +27,11 @@ class Direction(Enum):
     RIGHT = 3
 
 
+class GameType(Enum):
+    ONE_PLAYER = 1
+    TWO_PLAYERS = 2
+
+
 class TerrainType(Enum):
     BLANK = 1, True, True, False, 0
     BRINK = 2, False, False, True, 0
