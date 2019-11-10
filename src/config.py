@@ -13,6 +13,9 @@ class GameConfig(object):
     _steel_area = [(5, 6)]
     _brink_area = [(9, 5), (9, 7), (8, 5), (8, 6), (8, 7)]
 
+    enemies = 20
+    player_lives = 3
+
     @classmethod
     def width(cls):
         return cls.columns * cls.cube_size

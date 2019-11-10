@@ -100,6 +100,9 @@ class TankItem(QGraphicsPixmapItem):
             ammo = AmmoItem(ammo_png, self, self.direction)
             self.scene().addItem(ammo)
 
+    def destroy(self):
+        pass
+
     def __str__(self):
         return self.tank.name
 
@@ -185,6 +188,8 @@ class AmmoItem(QGraphicsPixmapItem):
                 if not item.terrain.ammo_passable:
                     destroy = True
             if isinstance(item, TankItem):
+                if item.tank.is_player != item.tank.is_player:
+                    item.destroy()
                 destroy = True
         if destroy:
             self.destroy()
@@ -193,3 +198,4 @@ class AmmoItem(QGraphicsPixmapItem):
         self.available = False
         self.tank.ammo_storage += 1
         self.scene().removeItem(self)
+

@@ -63,14 +63,15 @@ class TerrainType(Enum):
 
 
 class TankType(Enum):
-    PLAYER_ONE = 'Player 1', 3, 20, 10, 3, 3, 10, True, 'player_tank_1.png'
-    PLAYER_TWO = 'Player 2', 3, 20, 10, 3, 3, 10, True, 'player_tank_2.png'
-    ENEMY_1 = 'Enemy 1', 1, 10, 10, 3, 3, 10, False, 'tank_1.png'
-    ENEMY_2 = 'Enemy 2', 1, 10, 10, 3, 4, 15, False, 'tank_2.png'
-    ENEMY_3 = 'Enemy 3', 1, 30, 20, 3, 2, 7, False, 'tank_3.png'
+    PLAYER_ONE = 'Player 1', 3, 20, 10, 3, 3, 10, 0, True, 'player_tank_1.png'
+    PLAYER_TWO = 'Player 2', 3, 20, 10, 3, 3, 10, 0, True, 'player_tank_2.png'
+    ENEMY_1 = 'Enemy 1', 1, 10, 10, 3, 3, 10, 100, False, 'tank_1.png'
+    ENEMY_2 = 'Enemy 2', 1, 10, 10, 3, 4, 15, 150, False, 'tank_2.png'
+    ENEMY_3 = 'Enemy 3', 1, 30, 20, 3, 2, 7, 200, False, 'tank_3.png'
 
     def __init__(self, tank_name: str, lives: int, hit_point: int, power: int,
-                 max_storage: int, speed: int, ammo_speed: int, is_player: bool, pic: str):
+                 max_storage: int, speed: int, ammo_speed: int, score: int,
+                 is_player: bool, pic: str):
         self._tank_name = tank_name
         self._lives = lives
         self._hit_point = hit_point
@@ -78,6 +79,7 @@ class TankType(Enum):
         self._max_storage = max_storage
         self._speed = speed
         self._ammo_speed = ammo_speed
+        self._score = score
         self._is_player = is_player
         self._pic = pic
 
@@ -110,6 +112,10 @@ class TankType(Enum):
         return self._ammo_speed
 
     @property
+    def score(self):
+        return self._score
+
+    @property
     def is_player(self):
         return self._is_player
 
@@ -127,6 +133,7 @@ class Tank(object):
         self.max_storage = tank.max_storage
         self.speed = tank.speed
         self.ammo_speed = tank.ammo_speed
+        self.score = tank.score
         self.is_player = tank.is_player
         self.pic = tank.pic
         self.ammo_storage = self.max_storage
@@ -141,3 +148,18 @@ class Terrain(object):
                 self.state = random.choices([0, 1], k=4)
         else:
             self.state = state
+
+
+class Statistics(object):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = object.__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        self.player_1_lives = GameConfig.player_lives
+        self.player_2_lives = GameConfig.player_lives
+        self.player_1_score = 0
+        self.player_0_score = 0

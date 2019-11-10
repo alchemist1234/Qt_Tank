@@ -176,6 +176,7 @@ class GameScene(QGraphicsScene):
         self.tank1 = TankItem(TankType.PLAYER_ONE, Direction.UP)
         self.tank2 = TankItem(TankType.PLAYER_TWO, Direction.UP)
         self.enemies = []
+        self.remain_enemies = GameConfig.enemies
         self.terrain_map = generate_random_map(columns, rows)
         self.draw_terrain(self.terrain_map)
         brush = QBrush()
@@ -185,6 +186,7 @@ class GameScene(QGraphicsScene):
 
     def start(self, players):
         self.started = True
+        self.remain_enemies = GameConfig.enemies
         self.add_tank1(self.tank1)
         if players > 1:
             self.add_tank2(self.tank2)
@@ -205,10 +207,12 @@ class GameScene(QGraphicsScene):
         self.addItem(tank)
 
     def add_enemy(self, enemy: EnemyItem, x_cell=0):
-        enemy.setX(x_cell * cube_size)
-        enemy.setY(0)
-        self.enemies.append(enemy)
-        self.addItem(enemy)
+        if self.remain_enemies > 0:
+            self.remain_enemies -= 1
+            enemy.setX(x_cell * cube_size)
+            enemy.setY(0)
+            self.enemies.append(enemy)
+            self.addItem(enemy)
 
     def draw_terrain(self, terrain_list: list):
         size = int(cube_size / 2)
