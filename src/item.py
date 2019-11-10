@@ -38,6 +38,8 @@ class TankItem(QGraphicsPixmapItem):
         if len(self.directions) != 0:
             d = self.directions[-1]
             if self.direction != d:
+                self.check_turn(self.direction, d)
+                x, y = self.x(), self.y()
                 self.direction = d
             if d == Direction.UP:
                 self.setRotation(0)
@@ -75,6 +77,25 @@ class TankItem(QGraphicsPixmapItem):
             if self.x() % (cube_size / 2) != 0:
                 speed = self.tank.speed if self.direction == Direction.RIGHT else -self.tank.speed
                 self.moveBy(speed, 0)
+
+    def check_turn(self, before_turn: Direction, after_turn: Direction):
+        before_in_x = before_turn in [Direction.LEFT, Direction.RIGHT]
+        after_in_x = after_turn in [Direction.LEFT, Direction.RIGHT]
+        if after_in_x != before_in_x:
+            if before_in_x:
+                pos = self.x() % (cube_size / 2)
+                if pos != 0:
+                    if pos > cube_size / 4:
+                        self.moveBy(cube_size / 2 - pos, 0)
+                    else:
+                        self.moveBy(-pos, 0)
+            else:
+                pos = self.y() % (cube_size / 2)
+                if pos != 0:
+                    if pos > cube_size / 4:
+                        self.moveBy(0, cube_size / 2 - pos)
+                    else:
+                        self.moveBy(0, -pos)
 
     def check_collide(self, x, y):
         colliding_items = self.collidingItems(mode=Qt.IntersectsItemBoundingRect)
@@ -188,9 +209,9 @@ class AmmoItem(QGraphicsPixmapItem):
                 if not item.terrain.ammo_passable:
                     destroy = True
             if isinstance(item, TankItem):
-                if item.tank.is_player != item.tank.is_player:
+                if self.tank.is_player != item.tank.is_player:
                     item.destroy()
-                destroy = True
+                    destroy = True
         if destroy:
             self.destroy()
 
@@ -198,4 +219,3 @@ class AmmoItem(QGraphicsPixmapItem):
         self.available = False
         self.tank.ammo_storage += 1
         self.scene().removeItem(self)
-
