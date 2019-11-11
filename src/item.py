@@ -123,6 +123,7 @@ class TankItem(QGraphicsPixmapItem):
             self.scene().addItem(ammo)
 
     def destroy(self):
+        self.scene().add_enemy()
         self.scene().removeItem(self)
         pass
 
@@ -211,12 +212,16 @@ class AmmoItem(QGraphicsPixmapItem):
                 if not item.terrain.ammo_passable:
                     destroy = True
             if isinstance(item, TankItem):
+                if self.tank == item.tank:
+                    continue
                 if self.tank.is_player != item.tank.is_player:
                     if self.tank.is_player:
                         self.score(item.tank)
                     item.destroy()
-                    destroy = True
-            # todo ammo hit self destroy bug
+                destroy = True
+            if isinstance(item, AmmoItem):
+                destroy = True
+                item.destroy()
         if destroy:
             self.destroy()
 

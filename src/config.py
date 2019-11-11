@@ -1,6 +1,7 @@
 class GameConfig(object):
     cube_size = 60
     rows = 10
+    # columns should always be an odd
     columns = 13
     interval = 20
 
@@ -15,6 +16,11 @@ class GameConfig(object):
 
     enemies = 20
     player_lives = 3
+    enemy_born_columns = [(columns - 1) / 2 * i for i in range(3)]
+
+    _enemy_1_weight = 0.6
+    _enemy_2_weight = 0.3
+    _enemy_3_weight = 0.1
 
     @classmethod
     def width(cls):
@@ -39,3 +45,7 @@ class GameConfig(object):
     @classmethod
     def steel_area(cls):
         return cls._steel_area
+
+    @classmethod
+    def enemy_weights(cls):
+        return [cls._enemy_1_weight, cls._enemy_2_weight, cls._enemy_3_weight]

@@ -1,10 +1,12 @@
-from PySide2.QtCore import QTimer, Qt
+from PySide2.QtCore import QTimer, Qt, QRect
 from PySide2.QtGui import QPixmap, QKeyEvent, QBrush, QFont, QPen
 from PySide2.QtWidgets import QGraphicsScene, QGraphicsTextItem, QGraphicsRectItem, QGraphicsPixmapItem
 
 from src.config import GameConfig
 from src.base import Direction, GameType, TankType, TerrainType, generate_random_map
 from src.item import TankItem, EnemyItem, TerrainItem
+
+import random
 
 columns = GameConfig.columns
 rows = GameConfig.rows
@@ -178,6 +180,7 @@ class GameScene(QGraphicsScene):
         self.tank2 = TankItem(TankType.PLAYER_TWO, Direction.UP)
         self.enemies = []
         self.remain_enemies = GameConfig.enemies
+        self.enemy_born_rects = [QRect(cube_size * i, 0, cube_size, cube_size) for i in GameConfig.enemy_born_columns]
         self.terrain_map = generate_random_map(columns, rows)
         self.draw_terrain(self.terrain_map)
         brush = QBrush()
@@ -191,9 +194,9 @@ class GameScene(QGraphicsScene):
         self.add_tank1(self.tank1)
         if game_type == GameType.TWO_PLAYERS:
             self.add_tank2(self.tank2)
-        self.add_enemy(EnemyItem(TankType.ENEMY_1), 0)
-        self.add_enemy(EnemyItem(TankType.ENEMY_2), 6)
-        self.add_enemy(EnemyItem(TankType.ENEMY_3), 12)
+        self.add_enemy()
+        self.add_enemy()
+        self.add_enemy()
 
     def add_tank1(self, tank: TankItem):
         self.tank1 = tank
@@ -207,8 +210,14 @@ class GameScene(QGraphicsScene):
         self.tank2.setY(content_height - cube_size)
         self.addItem(tank)
 
-    def add_enemy(self, enemy: EnemyItem, x_cell=0):
+    def add_enemy(self):
+        # todo check obstacle
+
         if self.remain_enemies > 0:
+            enemy_type = random.choices([TankType.ENEMY_1, TankType.ENEMY_2, TankType.ENEMY_3],
+                                        weights=GameConfig.enemy_weights(), k=1)[0]
+            enemy = EnemyItem(enemy_type)
+            x_cell = GameConfig.enemy_born_columns[self.remain_enemies % 3]
             self.remain_enemies -= 1
             enemy.setX(x_cell * cube_size)
             enemy.setY(0)
