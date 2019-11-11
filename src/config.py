@@ -16,11 +16,14 @@ class GameConfig(object):
 
     enemies = 20
     player_lives = 3
-    enemy_born_columns = [(columns - 1) / 2 * i for i in range(3)]
+    max_enemies_in_field = 5
+    enemy_born_columns = [(13 - 1) / 2 * i for i in range(3)]
 
     _enemy_1_weight = 0.6
     _enemy_2_weight = 0.3
     _enemy_3_weight = 0.1
+
+    enemy_shoot_weight = 0.2
 
     @classmethod
     def width(cls):

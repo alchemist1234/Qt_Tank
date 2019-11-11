@@ -177,7 +177,7 @@ class GameScene(QGraphicsScene):
         self.stage = stage
         self.started = False
         self.tank1 = TankItem(TankType.PLAYER_ONE, Direction.UP)
-        self.tank2 = TankItem(TankType.PLAYER_TWO, Direction.UP)
+        self.tank2 = None
         self.enemies = []
         self.remain_enemies = GameConfig.enemies
         self.enemy_born_rects = [QRect(cube_size * i, 0, cube_size, cube_size) for i in GameConfig.enemy_born_columns]
@@ -187,16 +187,21 @@ class GameScene(QGraphicsScene):
         brush.setColor(Qt.black)
         brush.setStyle(Qt.SolidPattern)
         self.setBackgroundBrush(brush)
+        self.enemy_born_timer = QTimer()
+        self.enemy_born_timer.setInterval(3000)
+        self.enemy_born_timer.timeout.connect(self.add_enemy)
 
     def start(self, game_type: GameType):
         self.started = True
         self.remain_enemies = GameConfig.enemies
         self.add_tank1(self.tank1)
         if game_type == GameType.TWO_PLAYERS:
+            self.tank2 = TankItem(TankType.PLAYER_TWO, Direction.UP)
             self.add_tank2(self.tank2)
-        self.add_enemy()
-        self.add_enemy()
-        self.add_enemy()
+        self.enemy_born_timer.start()
+        # self.add_enemy()
+        # self.add_enemy()
+        # self.add_enemy()
 
     def add_tank1(self, tank: TankItem):
         self.tank1 = tank
@@ -211,18 +216,37 @@ class GameScene(QGraphicsScene):
         self.addItem(tank)
 
     def add_enemy(self):
-        # todo check obstacle
-
-        if self.remain_enemies > 0:
+        if self.remain_enemies > 0 and len(self.enemies) < GameConfig.max_enemies_in_field:
             enemy_type = random.choices([TankType.ENEMY_1, TankType.ENEMY_2, TankType.ENEMY_3],
                                         weights=GameConfig.enemy_weights(), k=1)[0]
             enemy = EnemyItem(enemy_type)
-            x_cell = GameConfig.enemy_born_columns[self.remain_enemies % 3]
-            self.remain_enemies -= 1
-            enemy.setX(x_cell * cube_size)
-            enemy.setY(0)
-            self.enemies.append(enemy)
-            self.addItem(enemy)
+            available_rect = []
+            for rect in self.enemy_born_rects:
+                has_tank = False
+                for e in self.enemies:
+                    if rect.contains(int(e.x()), int(e.y())):
+                        has_tank = True
+                        break
+                if self.tank1 is not None:
+                    if rect.contains(int(self.tank1.x()), int(self.tank1.y())):
+                        has_tank = True
+                if self.tank2 is not None:
+                    if rect.contains(int(self.tank2.x()), int(self.tank2.y())):
+                        has_tank = True
+                if not has_tank:
+                    available_rect.append(rect)
+            if len(available_rect) > 0:
+                born_rect = random.choice(available_rect)
+                x = born_rect.x()
+                self.remain_enemies -= 1
+                enemy.setX(x)
+                enemy.setY(0)
+                self.enemies.append(enemy)
+                self.addItem(enemy)
+
+    def destroy_tank(self, tank_item: TankItem):
+        self.enemies.remove(tank_item)
+        self.removeItem(tank_item)
 
     def draw_terrain(self, terrain_list: list):
         size = int(cube_size / 2)

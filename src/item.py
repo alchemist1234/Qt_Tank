@@ -123,9 +123,7 @@ class TankItem(QGraphicsPixmapItem):
             self.scene().addItem(ammo)
 
     def destroy(self):
-        self.scene().add_enemy()
-        self.scene().removeItem(self)
-        pass
+        self.scene().destroy_tank(self)
 
     def __str__(self):
         return self.tank.name
@@ -136,17 +134,25 @@ class EnemyItem(TankItem):
         super().__init__(png, Direction.DOWN)
         self.setRotation(180)
         self.auto_timer = QTimer()
-        self.auto_timer.setInterval(1000)
+        self.auto_timer.setInterval(500)
         self.auto_timer.timeout.connect(self.auto)
         self.auto_timer.start()
 
     def auto(self):
         change_score = random.randint(0, 99)
-        if change_score < 40:
+        if change_score < 40 or len(self.directions) == 0:
             directions = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT]
+            if self.x() < cube_size:
+                directions.remove(Direction.LEFT)
+            if self.x() > content_width - cube_size:
+                directions.remove(Direction.RIGHT)
+            if self.y() < cube_size:
+                directions.remove(Direction.UP)
+            if self.y() > content_height - cube_size:
+                directions.remove(Direction.DOWN)
             self.directions = [random.choice(directions)]
         shoot_score = random.randint(0, 99)
-        if shoot_score < 10:
+        if shoot_score < GameConfig.enemy_shoot_weight * 100:
             self.shoot()
 
 
