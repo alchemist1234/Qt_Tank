@@ -30,7 +30,6 @@ class MaskScene(QGraphicsScene):
         self.animation_timer_1 = QTimer()
         self.animation_timer_2 = QTimer()
         self.animation_timer_3 = QTimer()
-        self.game_type = None
         self.init()
 
     def init(self):
@@ -65,14 +64,6 @@ class MaskScene(QGraphicsScene):
         self.animation_timer_3.setInterval(interval)
         self.animation_timer_3.timeout.connect(self.animation_out)
 
-    def next_stage(self):
-        self.stage += 1
-        self.stage_text_item.setPlainText(self._stage_text % self.stage)
-
-    def reset_stage(self):
-        self.stage = 0
-        self.stage_text_item.setPlainText(self._stage_text % self.stage)
-
     def animation_in(self):
         self.mask_height += 10
         finished = False
@@ -96,22 +87,23 @@ class MaskScene(QGraphicsScene):
         self.lower_mask.setRect(0, content_height - self.mask_height, content_width, self.mask_height)
         if finished:
             self.animation_timer_3.stop()
-            self.main_window.start_game(self.game_type)
+            self.main_window.start_stage()
 
     def animation_hold(self):
         self.removeItem(self.stage_text_item)
         self.animation_timer_3.start()
-        self.main_window.enter_game_scene()
+        self.main_window.switch_game_scene()
 
-    def start_animation(self, game_type: GameType):
+    def start_animation(self):
+        self.stage = self.main_window.data.stage
+        self.stage_text_item.setPlainText(self._stage_text % self.stage)
         self.animation_timer_1.start()
-        self.game_type = game_type
 
 
 class StartScene(QGraphicsScene):
-    def __init__(self, mask_scene, stage=1):
+    def __init__(self, main_window, stage=1):
         super().__init__()
-        self.mask_scene = mask_scene
+        self.main_window = main_window
         self.y_list = [300, 400]
         self.game_type_list = [GameType.ONE_PLAYER, GameType.TWO_PLAYERS]
         self.selected = 0
@@ -168,17 +160,18 @@ class StartScene(QGraphicsScene):
         if event.key() == Qt.Key_Space:
             if not self.start:
                 self.start = True
-                self.mask_scene.start_animation(self.game_type_list[self.selected])
+                self.main_window.set_game_type(self.game_type_list[self.selected])
+                self.main_window.start_stage_animation()
 
 
 class GameScene(QGraphicsScene):
-    def __init__(self, main_window, stage=1):
+    def __init__(self, main_window, game_type: GameType):
         super().__init__()
         self.main_window = main_window
-        self.stage = stage
+        self.game_type = game_type
         self.started = False
         self.tank1 = TankItem(TankType.PLAYER_ONE, Direction.UP)
-        self.tank2 = None
+        self.tank2 = TankItem(TankType.PLAYER_TWO, Direction.UP) if game_type == GameType.TWO_PLAYERS else None
         self.enemies = []
         self.remain_enemies = GameConfig.enemies
         self.enemy_born_rects = [QRect(cube_size * i, 0, cube_size, cube_size) for i in GameConfig.enemy_born_columns]
@@ -192,17 +185,13 @@ class GameScene(QGraphicsScene):
         self.enemy_born_timer.setInterval(3000)
         self.enemy_born_timer.timeout.connect(self.add_enemy)
 
-    def start(self, game_type: GameType):
+    def start(self):
         self.started = True
         self.remain_enemies = GameConfig.enemies
         self.add_tank1(self.tank1)
-        if game_type == GameType.TWO_PLAYERS:
-            self.tank2 = TankItem(TankType.PLAYER_TWO, Direction.UP)
+        if self.tank2 is not None:
             self.add_tank2(self.tank2)
         self.enemy_born_timer.start()
-        # self.add_enemy()
-        # self.add_enemy()
-        # self.add_enemy()
 
     def add_tank1(self, tank: TankItem):
         self.tank1 = tank
@@ -246,14 +235,34 @@ class GameScene(QGraphicsScene):
                 self.addItem(enemy)
 
     def destroy_tank(self, tank_item: TankItem):
-        self.enemies.remove(tank_item)
         self.removeItem(tank_item)
-        if self.remain_enemies == 0 and len(self.enemies) == 0:
-            self.next_stage()
+        if isinstance(tank_item, EnemyItem):
+            self.enemies.remove(tank_item)
+            if self.remain_enemies == 0 and len(self.enemies) == 0:
+                self.next_stage()
+        elif tank_item == self.tank1:
+            self.tank1 = None
+            if self.main_window.data.player_1_lives > 0:
+                self.main_window.data.player_1_lives -= 1
+                self.add_tank1(TankItem(TankType.PLAYER_ONE, Direction.UP))
+        elif tank_item == self.tank2:
+            self.tank2 = None
+            if self.main_window.data.player_2_lives > 0:
+                self.main_window.data.player_2_lives -= 1
+                self.add_tank2(TankItem(TankType.PLAYER_TWO, Direction.UP))
 
     def next_stage(self):
-        game_type = self.main_window.mask_scene.game_type
-        self.main_window.mask_scene.start_animation(game_type)
+        self.main_window.data.stage += 1
+        self.main_window.start_stage_animation()
+
+    def destroy(self):
+        if self.tank1 is not None:
+            self.removeItem(self.tank1)
+        if self.tank2 is not None:
+            self.removeItem(self.tank2)
+        for e in self.enemies:
+            self.removeItem(e)
+        self.enemy_born_timer.stop()
 
     def draw_terrain(self, terrain_list: list):
         size = int(cube_size / 2)

@@ -14,7 +14,7 @@ class GameConfig(object):
     _steel_area = [(5, 6)]
     _brink_area = [(9, 5), (9, 7), (8, 5), (8, 6), (8, 7)]
 
-    enemies = 20
+    enemies = 2
     player_lives = 3
     max_enemies_in_field = 5
     enemy_born_columns = [(13 - 1) / 2 * i for i in range(3)]
@@ -23,7 +23,7 @@ class GameConfig(object):
     _enemy_2_weight = 0.3
     _enemy_3_weight = 0.1
 
-    enemy_shoot_weight = 0.2
+    enemy_shoot_weight = 0.4
 
     @classmethod
     def width(cls):

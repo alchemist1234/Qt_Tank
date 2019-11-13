@@ -4,7 +4,7 @@ from PySide2.QtCore import QRect
 from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsView, QWidget
 
 from src.config import GameConfig
-from src.base import GameType
+from src.base import GameType, Data
 from src.scene import GameScene, StartScene, MaskScene
 
 content_height = GameConfig.height()
@@ -16,10 +16,11 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
         self.game_scene = None
         self.mask_scene = MaskScene(self)
-        self.start_scene = StartScene(self.mask_scene)
+        self.start_scene = StartScene(self)
         self.main_widget = QWidget()
         self.graph_view = QGraphicsView(self.main_widget)
         self.mask_view = QGraphicsView(self.main_widget)
+        self.data = Data()
         self.init()
 
     def init(self):
@@ -35,13 +36,27 @@ class MainWindow(QMainWindow):
         self.mask_view.setScene(self.mask_scene)
         self.setCentralWidget(self.main_widget)
 
-    def enter_game_scene(self, stage=1):
-        self.game_scene = GameScene(self, stage)
+    def set_game_type(self, game_type: GameType):
+        self.data.game_type = game_type
+
+    def start_stage_animation(self):
+        self.mask_scene.start_animation()
+
+    def switch_game_scene(self):
+        if self.game_scene is not None:
+            self.game_scene.destroy()
+        self.game_scene = GameScene(self, self.data.game_type)
         self.game_scene.setSceneRect(0, 0, content_width, content_height)
         self.graph_view.setScene(self.game_scene)
 
-    def start_game(self, game_type: GameType):
-        self.game_scene.start(game_type)
+    def start_stage(self):
+        self.game_scene.start()
+
+    def show_score(self):
+        pass
+
+    def game_over(self):
+        pass
 
 
 if __name__ == '__main__':

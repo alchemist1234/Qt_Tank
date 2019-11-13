@@ -3,14 +3,14 @@ from PySide2.QtGui import QPixmap
 from PySide2.QtWidgets import QGraphicsPixmapItem
 import random
 
-from .base import Direction, Tank, TerrainType, TankType, Statistics
+from .base import Direction, Tank, TerrainType, TankType, Data
 from .config import GameConfig
 
 cube_size = GameConfig.cube_size
 interval = GameConfig.interval
 content_width = GameConfig.width()
 content_height = GameConfig.height()
-data = Statistics()
+data = Data()
 
 
 class TerrainItem(QGraphicsPixmapItem):

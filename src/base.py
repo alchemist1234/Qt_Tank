@@ -159,8 +159,10 @@ class Terrain(object):
             self.state = state
 
 
-class Statistics(object):
+class Data(object):
     _instance = None
+    game_type = GameType.ONE_PLAYER
+    stage = 1
     player_1_lives = GameConfig.player_lives
     player_2_lives = GameConfig.player_lives
     player_1_score = 0
@@ -178,6 +180,8 @@ class Statistics(object):
 
     @classmethod
     def reset(cls):
+        cls.game_type = GameType.ONE_PLAYER
+        cls.stage = 1
         cls.player_1_lives = GameConfig.player_lives
         cls.player_2_lives = GameConfig.player_lives
         cls.player_1_score = 0
