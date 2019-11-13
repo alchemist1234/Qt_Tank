@@ -5,7 +5,7 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsView, QWidget
 
 from src.config import GameConfig
 from src.base import GameType, Data
-from src.scene import GameScene, StartScene, MaskScene
+from src.scene import GameScene, StartScene, MaskScene, GameOverScene, ScoreScene
 
 content_height = GameConfig.height()
 content_width = GameConfig.width()
@@ -17,6 +17,7 @@ class MainWindow(QMainWindow):
         self.game_scene = None
         self.mask_scene = MaskScene(self)
         self.start_scene = StartScene(self)
+        self.game_over_scene = GameOverScene(self)
         self.main_widget = QWidget()
         self.graph_view = QGraphicsView(self.main_widget)
         self.mask_view = QGraphicsView(self.main_widget)
@@ -35,6 +36,10 @@ class MainWindow(QMainWindow):
         self.mask_view.setStyleSheet('background: transparent')
         self.mask_view.setScene(self.mask_scene)
         self.setCentralWidget(self.main_widget)
+
+    def ready(self):
+        self.data.stage = 1
+        self.graph_view.setScene(self.start_scene)
 
     def set_game_type(self, game_type: GameType):
         self.data.game_type = game_type
@@ -56,7 +61,10 @@ class MainWindow(QMainWindow):
         pass
 
     def game_over(self):
-        pass
+        if self.game_scene is not None:
+            self.game_scene.destroy()
+        self.graph_view.setScene(self.game_over_scene)
+        self.game_over_scene.game_over()
 
 
 if __name__ == '__main__':

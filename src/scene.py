@@ -249,6 +249,13 @@ class GameScene(QGraphicsScene):
                 self.main_window.data.player_2_lives -= 1
                 self.add_tank2(TankItem(TankType.PLAYER_TWO, Direction.UP))
 
+        if (self.tank1 is None and self.main_window.data.player_1_lives == 0
+                and ((self.main_window.data.game_type == GameType.TWO_PLAYERS
+                      and self.tank2 is None
+                      and self.main_window.data.player_2_lives == 0)
+                     or self.main_window.data.game_type == GameType.ONE_PLAYER)):
+            self.main_window.game_over()
+
     def next_stage(self):
         self.main_window.data.stage += 1
         self.main_window.start_stage_animation()
@@ -259,6 +266,7 @@ class GameScene(QGraphicsScene):
         if self.tank2 is not None:
             self.removeItem(self.tank2)
         for e in self.enemies:
+            e.auto_timer.stop()
             self.removeItem(e)
         self.enemy_born_timer.stop()
 
@@ -318,20 +326,58 @@ class GameScene(QGraphicsScene):
     def keyReleaseEvent(self, event: QKeyEvent):
         if self.started:
             if self.tank1 is not None:
-                if event.key() == Qt.Key_W:
+                if event.key() == Qt.Key_W and Direction.UP in self.tank1.directions:
                     self.tank1.directions.remove(Direction.UP)
-                elif event.key() == Qt.Key_S:
+                elif event.key() == Qt.Key_S and Direction.DOWN in self.tank1.directions:
                     self.tank1.directions.remove(Direction.DOWN)
-                elif event.key() == Qt.Key_A:
+                elif event.key() == Qt.Key_A and Direction.LEFT in self.tank1.directions:
                     self.tank1.directions.remove(Direction.LEFT)
-                elif event.key() == Qt.Key_D:
+                elif event.key() == Qt.Key_D and Direction.RIGHT in self.tank1.directions:
                     self.tank1.directions.remove(Direction.RIGHT)
             if self.tank2 is not None:
-                if event.key() == Qt.Key_Up:
+                if event.key() == Qt.Key_Up and Direction.UP in self.tank2.directions:
                     self.tank2.directions.remove(Direction.UP)
-                elif event.key() == Qt.Key_Down:
+                elif event.key() == Qt.Key_Down and Direction.DOWN in self.tank2.directions:
                     self.tank2.directions.remove(Direction.DOWN)
-                elif event.key() == Qt.Key_Left:
+                elif event.key() == Qt.Key_Left and Direction.LEFT in self.tank2.directions:
                     self.tank2.directions.remove(Direction.LEFT)
-                elif event.key() == Qt.Key_Right:
+                elif event.key() == Qt.Key_Right and Direction.RIGHT in self.tank2.directions:
                     self.tank2.directions.remove(Direction.RIGHT)
+
+
+class ScoreScene(QGraphicsScene):
+    def __init__(self, main_window):
+        super().__init__()
+        self.main_window = main_window
+
+
+class GameOverScene(QGraphicsScene):
+    def __init__(self, main_window):
+        super().__init__()
+        self.main_window = main_window
+        self.text = QGraphicsTextItem('GAME  OVER')
+        self.timer = QTimer()
+        self.init()
+
+    def init(self):
+        brush = QBrush()
+        brush.setColor(Qt.black)
+        brush.setStyle(Qt.SolidPattern)
+        self.setBackgroundBrush(brush)
+        font = QFont()
+        font.setPointSize(28)
+        font.setBold(True)
+        self.text.setFont(font)
+        self.text.setDefaultTextColor(Qt.white)
+        self.text.setX(content_width - self.text.boundingRect().width() / 2)
+        self.text.setY(content_height - self.text.boundingRect().height() / 2)
+        self.addItem(self.text)
+        self.timer.setSingleShot(True)
+        self.timer.setInterval(2000)
+        self.timer.timeout.connect(self.time_over)
+
+    def game_over(self):
+        self.timer.start()
+
+    def time_over(self):
+        self.main_window.ready()

@@ -1,10 +1,17 @@
+from PySide2.QtCore import Qt
+
+
 class GameConfig(object):
+    # Window parameter
     cube_size = 60
     rows = 10
-    # columns should always be an odd
-    columns = 13
+
+    columns = 13  # columns should always be an odd
+
+    # Refresh interval
     interval = 20
 
+    # Terrain
     _blank_wight = 0.6
     _brink_weight = 0.2
     _steel_weight = 0.1
@@ -14,8 +21,9 @@ class GameConfig(object):
     _steel_area = [(5, 6)]
     _brink_area = [(9, 5), (9, 7), (8, 5), (8, 6), (8, 7)]
 
-    enemies = 20
-    player_lives = 3
+    # Game parameters
+    # Enemy
+    enemies = 2
     max_enemies_in_field = 5
     enemy_born_columns = [(13 - 1) / 2 * i for i in range(3)]
 
@@ -24,6 +32,21 @@ class GameConfig(object):
     _enemy_3_weight = 0.1
 
     enemy_shoot_weight = 0.4
+
+    # Player
+    player_lives = 1
+
+    player_1_control_up = Qt.Key_W
+    player_1_control_down = Qt.Key_S
+    player_1_control_left = Qt.Key_A
+    player_1_control_right = Qt.Key_D
+    player_1_control_shoot = Qt.Key_J
+
+    player_2_control_up = Qt.Key_Up
+    player_2_control_down = Qt.Key_Down
+    player_2_control_left = Qt.Key_Left
+    player_2_control_right = Qt.Key_Right
+    player_2_control_shoot = Qt.Key_Slash
 
     @classmethod
     def width(cls):
