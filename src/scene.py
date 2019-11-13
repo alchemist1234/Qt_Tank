@@ -1,5 +1,5 @@
 from PySide2.QtCore import QTimer, Qt, QRect
-from PySide2.QtGui import QPixmap, QKeyEvent, QBrush, QFont, QPen
+from PySide2.QtGui import QPixmap, QKeyEvent, QBrush, QFont, QPen, QMovie
 from PySide2.QtWidgets import QGraphicsScene, QGraphicsTextItem, QGraphicsRectItem, QGraphicsPixmapItem
 
 from src.config import GameConfig
@@ -137,9 +137,7 @@ class StartScene(QGraphicsScene):
         self.addItem(self.one_play_text_item)
         self.addItem(self.two_plays_text_item)
 
-        png = QPixmap()
-        png.load('../images/%s' % TankType.PLAYER_ONE.pic)
-        png = png.scaled(25, 25)
+        png = QPixmap('../images/%s' % TankType.PLAYER_ONE.pic).scaled(25, 25)
         self.indicator_item = QGraphicsPixmapItem(png)
         self.indicator_item.setRotation(90)
         self.indicator_item.setX(260)

@@ -21,9 +21,7 @@ class TerrainItem(QGraphicsPixmapItem):
 
 class TankItem(QGraphicsPixmapItem):
     def __init__(self, tank, direction: Direction):
-        png = QPixmap()
-        png.load('../images/%s' % tank.pic)
-        png = png.scaled(cube_size, cube_size)
+        png = QPixmap('../images/%s' % tank.pic).scaled(cube_size, cube_size)
         QGraphicsPixmapItem.__init__(self, png)
         self.directions = []
         self.direction = direction
@@ -116,9 +114,7 @@ class TankItem(QGraphicsPixmapItem):
     def shoot(self):
         if self.tank.ammo_storage > 0:
             self.tank.ammo_storage -= 1
-            ammo_png = QPixmap()
-            ammo_png.load('../images/ammo.png')
-            ammo_png = ammo_png.scaled(5, 8)
+            ammo_png = QPixmap('../images/ammo.png').scaled(5, 8)
             ammo = AmmoItem(ammo_png, self, self.direction)
             self.scene().addItem(ammo)
 
