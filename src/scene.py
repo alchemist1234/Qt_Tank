@@ -172,8 +172,9 @@ class StartScene(QGraphicsScene):
 
 
 class GameScene(QGraphicsScene):
-    def __init__(self, stage=1):
+    def __init__(self, main_window, stage=1):
         super().__init__()
+        self.main_window = main_window
         self.stage = stage
         self.started = False
         self.tank1 = TankItem(TankType.PLAYER_ONE, Direction.UP)
@@ -247,6 +248,12 @@ class GameScene(QGraphicsScene):
     def destroy_tank(self, tank_item: TankItem):
         self.enemies.remove(tank_item)
         self.removeItem(tank_item)
+        if self.remain_enemies == 0 and len(self.enemies) == 0:
+            self.next_stage()
+
+    def next_stage(self):
+        game_type = self.main_window.mask_scene.game_type
+        self.main_window.mask_scene.start_animation(game_type)
 
     def draw_terrain(self, terrain_list: list):
         size = int(cube_size / 2)
