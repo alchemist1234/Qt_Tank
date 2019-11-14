@@ -16,7 +16,7 @@ def generate_random_map(columns: int, rows: int):
     for (i, j) in GameConfig.steel_area():
         terrain_map[i][j] = Terrain(TerrainType.STEEL, [1, 1, 1, 1])
     for (i, j) in GameConfig.brink_area():
-        terrain_map[i][j] = Terrain(TerrainType.BRINK, [1, 1, 1, 1])
+        terrain_map[i][j] = Terrain(TerrainType.BRICK, [1, 1, 1, 1])
     return terrain_map
 
 
@@ -34,7 +34,7 @@ class GameType(Enum):
 
 class TerrainType(Enum):
     BLANK = 1, True, True, False, 0
-    BRINK = 2, False, False, True, 0
+    BRICK = 2, False, False, True, 0
     STEEL = 3, False, False, True, 20
     GRASS = 4, True, True, False, 0
     WATER = 5, False, True, False, 0

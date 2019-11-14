@@ -13,13 +13,13 @@ class GameConfig(object):
 
     # Terrain
     _blank_wight = 0.6
-    _brink_weight = 0.2
+    _brick_weight = 0.2
     _steel_weight = 0.1
     _grass_weight = 0.05
     _water_weight = 0.05
     _blank_area = [(0, 0), (0, 6), (0, 12), (9, 4), (9, 8), (9, 6)]
     _steel_area = [(5, 6)]
-    _brink_area = [(9, 5), (9, 7), (8, 5), (8, 6), (8, 7)]
+    _brick_area = [(9, 5), (9, 7), (8, 5), (8, 6), (8, 7)]
 
     # Game parameters
     # Enemy
@@ -58,7 +58,7 @@ class GameConfig(object):
 
     @classmethod
     def terrain_weights(cls):
-        return [cls._blank_wight, cls._brink_weight, cls._steel_weight, cls._grass_weight, cls._water_weight]
+        return [cls._blank_wight, cls._brick_weight, cls._steel_weight, cls._grass_weight, cls._water_weight]
 
     @classmethod
     def blank_area(cls):
@@ -66,7 +66,7 @@ class GameConfig(object):
 
     @classmethod
     def brink_area(cls):
-        return cls._brink_area
+        return cls._brick_area
 
     @classmethod
     def steel_area(cls):

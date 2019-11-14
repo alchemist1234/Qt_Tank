@@ -275,8 +275,8 @@ class GameScene(QGraphicsScene):
         for r, line in enumerate(terrain_list):
             for c, cell in enumerate(line):
                 png = QPixmap()
-                if cell.terrain == TerrainType.BRINK:
-                    png.load('../images/brink.png')
+                if cell.terrain == TerrainType.BRICK:
+                    png.load('../images/brick.png')
                 elif cell.terrain == TerrainType.STEEL:
                     png.load('../images/steel.png')
                 elif cell.terrain == TerrainType.GRASS:
