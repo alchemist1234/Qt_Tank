@@ -16,8 +16,6 @@ content_width = GameConfig.width()
 content_height = GameConfig.height()
 interval = GameConfig.interval
 
-Boom = namedtuple('boom', ['item', 'pic_no'])
-
 
 class MaskScene(QGraphicsScene):
     _stage_text = 'STAGE %s'
@@ -266,7 +264,7 @@ class GameScene(QGraphicsScene):
             self.main_window.game_over()
 
     def boom_animation(self):
-        for boom in self.booms[::-1]:
+        for boom, pic_no in self.booms[::-1]:
             item, pic_no = boom
             pic_no += 1
             if pic_no > 5:
@@ -282,8 +280,7 @@ class GameScene(QGraphicsScene):
         boom_item.setX(item.x())
         boom_item.setY(item.y())
         self.addItem(boom_item)
-        boom = Boom(boom_item, 0)
-        self.booms.append(boom)
+        self.booms.append([boom_item, 0])
 
     def next_stage(self):
         self.main_window.data.stage += 1
