@@ -23,7 +23,7 @@ class GameConfig(object):
 
     # Game parameters
     # Enemy
-    enemies = 2
+    enemies = 10
     max_enemies_in_field = 5
     enemy_born_columns = [(13 - 1) / 2 * i for i in range(3)]
 

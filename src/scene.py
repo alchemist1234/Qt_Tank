@@ -7,6 +7,7 @@ from src.base import Direction, GameType, TankType, TerrainType, generate_random
 from src.item import TankItem, EnemyItem, TerrainItem
 
 import random
+from collections import namedtuple
 
 columns = GameConfig.columns
 rows = GameConfig.rows
@@ -14,6 +15,8 @@ cube_size = GameConfig.cube_size
 content_width = GameConfig.width()
 content_height = GameConfig.height()
 interval = GameConfig.interval
+
+Boom = namedtuple('boom', ['item', 'pic_no'])
 
 
 class MaskScene(QGraphicsScene):
@@ -171,6 +174,7 @@ class GameScene(QGraphicsScene):
         self.tank1 = TankItem(TankType.PLAYER_ONE, Direction.UP)
         self.tank2 = TankItem(TankType.PLAYER_TWO, Direction.UP) if game_type == GameType.TWO_PLAYERS else None
         self.enemies = []
+        self.booms = []
         self.remain_enemies = GameConfig.enemies
         self.enemy_born_rects = [QRect(cube_size * i, 0, cube_size, cube_size) for i in GameConfig.enemy_born_columns]
         self.terrain_map = generate_random_map(columns, rows)
@@ -182,6 +186,9 @@ class GameScene(QGraphicsScene):
         self.enemy_born_timer = QTimer()
         self.enemy_born_timer.setInterval(3000)
         self.enemy_born_timer.timeout.connect(self.add_enemy)
+        self.boom_timer = QTimer()
+        self.boom_timer.setInterval(200)
+        self.boom_timer.timeout.connect(self.boom_animation)
 
     def start(self):
         self.started = True
@@ -190,6 +197,7 @@ class GameScene(QGraphicsScene):
         if self.tank2 is not None:
             self.add_tank2(self.tank2)
         self.enemy_born_timer.start()
+        self.boom_timer.start()
 
     def add_tank1(self, tank: TankItem):
         self.tank1 = tank
@@ -233,6 +241,7 @@ class GameScene(QGraphicsScene):
                 self.addItem(enemy)
 
     def destroy_tank(self, tank_item: TankItem):
+        self.add_boom(tank_item)
         self.removeItem(tank_item)
         if isinstance(tank_item, EnemyItem):
             self.enemies.remove(tank_item)
@@ -255,6 +264,26 @@ class GameScene(QGraphicsScene):
                       and self.main_window.data.player_2_lives == 0)
                      or self.main_window.data.game_type == GameType.ONE_PLAYER)):
             self.main_window.game_over()
+
+    def boom_animation(self):
+        for boom in self.booms[::-1]:
+            item, pic_no = boom
+            pic_no += 1
+            if pic_no > 5:
+                self.removeItem(item)
+                self.booms.remove(boom)
+            else:
+                png = QPixmap('../images/boom_dynamic.png').copy(96 * pic_no, 0, 96, 96).scaled(cube_size, cube_size)
+                item.setPixmap(png)
+
+    def add_boom(self, item):
+        boom_png = QPixmap('../images/boom_dynamic.png').copy(0, 0, 96, 96).scaled(cube_size, cube_size)
+        boom_item = QGraphicsPixmapItem(boom_png)
+        boom_item.setX(item.x())
+        boom_item.setY(item.y())
+        self.addItem(boom_item)
+        boom = Boom(boom_item, 0)
+        self.booms.append(boom)
 
     def next_stage(self):
         self.main_window.data.stage += 1
