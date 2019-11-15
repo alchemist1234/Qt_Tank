@@ -173,6 +173,7 @@ class GameScene(QGraphicsScene):
         self.tank2 = TankItem(TankType.PLAYER_TWO, Direction.UP) if game_type == GameType.TWO_PLAYERS else None
         self.enemies = []
         self.booms = []
+        self.births = []
         self.remain_enemies = GameConfig.enemies
         self.enemy_born_rects = [QRect(cube_size * i, 0, cube_size, cube_size) for i in GameConfig.enemy_born_columns]
         self.terrain_map = generate_random_map(columns, rows)
@@ -187,6 +188,9 @@ class GameScene(QGraphicsScene):
         self.boom_timer = QTimer()
         self.boom_timer.setInterval(100)
         self.boom_timer.timeout.connect(self.boom_animation)
+        self.terrain_animation_timer = QTimer()
+        self.terrain_animation_timer.setInterval(250)
+        self.terrain_animation_timer.timeout.connect(self.terrain_animation)
 
     def start(self):
         self.started = True
@@ -196,6 +200,7 @@ class GameScene(QGraphicsScene):
             self.add_tank2(self.tank2)
         self.enemy_born_timer.start()
         self.boom_timer.start()
+        self.terrain_animation_timer.start()
 
     def add_tank1(self, tank: TankItem):
         self.tank1 = tank
@@ -321,9 +326,23 @@ class GameScene(QGraphicsScene):
                         item = TerrainItem(png, cell.terrain)
                         if cell.terrain == TerrainType.GRASS:
                             item.setZValue(10)
+                        if cell.terrain == TerrainType.WATER:
+                            item.setData(0, 0)
                         item.setX(x)
                         item.setY(y)
                         self.addItem(item)
+
+    def terrain_animation(self):
+        size = int(cube_size / 2)
+        for item in self.items():
+            if isinstance(item, TerrainItem) and item.terrain == TerrainType.WATER:
+                if item.data(0) == 0:
+                    png = QPixmap('../images/water1.png').scaled(size, size)
+                    item.setData(0, 1)
+                else:
+                    png = QPixmap('../images/water.png').scaled(size, size)
+                    item.setData(0, 0)
+                item.setPixmap(png)
 
     def keyPressEvent(self, event: QKeyEvent):
         if self.started:

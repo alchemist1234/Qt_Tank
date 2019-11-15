@@ -159,6 +159,16 @@ class Terrain(object):
             self.state = state
 
 
+class ItemType(Enum):
+    Boom = 0,
+    CLOCK = 1,
+    GUN = 2,
+    IRON = 3,
+    PROTECT = 4,
+    STAR = 5,
+    TANK = 6,
+
+
 class Data(object):
     _instance = None
     game_type = GameType.ONE_PLAYER
