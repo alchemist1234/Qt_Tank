@@ -185,7 +185,7 @@ class GameScene(QGraphicsScene):
         self.enemy_born_timer.setInterval(3000)
         self.enemy_born_timer.timeout.connect(self.add_enemy)
         self.boom_timer = QTimer()
-        self.boom_timer.setInterval(200)
+        self.boom_timer.setInterval(100)
         self.boom_timer.timeout.connect(self.boom_animation)
 
     def start(self):
@@ -264,23 +264,25 @@ class GameScene(QGraphicsScene):
             self.main_window.game_over()
 
     def boom_animation(self):
-        for boom, pic_no in self.booms[::-1]:
-            item, pic_no = boom
-            pic_no += 1
-            if pic_no > 5:
-                self.removeItem(item)
+        for boom in self.booms[::-1]:
+            pic_no = boom.data(0)
+            if pic_no >= 5:
+                self.removeItem(boom)
                 self.booms.remove(boom)
             else:
+                pic_no += 1
+                boom.setData(0, pic_no)
                 png = QPixmap('../images/boom_dynamic.png').copy(96 * pic_no, 0, 96, 96).scaled(cube_size, cube_size)
-                item.setPixmap(png)
+                boom.setPixmap(png)
 
     def add_boom(self, item):
         boom_png = QPixmap('../images/boom_dynamic.png').copy(0, 0, 96, 96).scaled(cube_size, cube_size)
         boom_item = QGraphicsPixmapItem(boom_png)
         boom_item.setX(item.x())
         boom_item.setY(item.y())
+        boom_item.setData(0, 0)
         self.addItem(boom_item)
-        self.booms.append([boom_item, 0])
+        self.booms.append(boom_item)
 
     def next_stage(self):
         self.main_window.data.stage += 1
