@@ -5,7 +5,6 @@ class GameConfig(object):
     # Window parameter
     cube_size = 60
     rows = 10
-
     columns = 13  # columns should always be an odd
 
     # Refresh interval
@@ -19,6 +18,7 @@ class GameConfig(object):
     _water_weight = 0.05
     _blank_area = [(0, 0), (0, 6), (0, 12), (9, 4), (9, 8), (9, 6)]
     _steel_area = [(5, 6)]
+    _home_area = (9, 6)
     _brick_area = [(9, 5), (9, 7), (8, 5), (8, 6), (8, 7)]
 
     # Game parameters
@@ -71,6 +71,10 @@ class GameConfig(object):
     @classmethod
     def steel_area(cls):
         return cls._steel_area
+
+    @classmethod
+    def home_area(cls):
+        return cls._home_area
 
     @classmethod
     def enemy_weights(cls):

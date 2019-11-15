@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QGraphicsScene, QGraphicsTextItem, QGraphicsRectIt
 
 from src.config import GameConfig
 from src.base import Direction, GameType, TankType, TerrainType, generate_random_map
-from src.item import TankItem, EnemyItem, TerrainItem
+from src.item import TankItem, EnemyItem, TerrainItem, HomeItem
 
 import random
 from collections import namedtuple
@@ -171,6 +171,8 @@ class GameScene(QGraphicsScene):
         self.started = False
         self.tank1 = TankItem(TankType.PLAYER_ONE, Direction.UP)
         self.tank2 = TankItem(TankType.PLAYER_TWO, Direction.UP) if game_type == GameType.TWO_PLAYERS else None
+        self.home = HomeItem()
+        self.addItem(self.home)
         self.enemies = []
         self.booms = []
         self.births = []

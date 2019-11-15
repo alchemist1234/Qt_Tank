@@ -19,6 +19,15 @@ class TerrainItem(QGraphicsPixmapItem):
         self.terrain = terrain
 
 
+class HomeItem(QGraphicsPixmapItem):
+    def __init__(self):
+        super().__init__()
+        png = QPixmap('../images/home.png').scaled(cube_size, cube_size)
+        self.setPixmap(png)
+        self.setX(cube_size * GameConfig.home_area()[1])
+        self.setY(cube_size * GameConfig.home_area()[0])
+
+
 class TankItem(QGraphicsPixmapItem):
     def __init__(self, tank, direction: Direction):
         png = QPixmap('../images/%s' % tank.pic).scaled(cube_size, cube_size)
