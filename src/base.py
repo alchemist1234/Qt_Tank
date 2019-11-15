@@ -159,7 +159,7 @@ class Terrain(object):
             self.state = state
 
 
-class ItemType(Enum):
+class FoodType(Enum):
     Boom = 0,
     CLOCK = 1,
     GUN = 2,

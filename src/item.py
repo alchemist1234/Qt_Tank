@@ -3,7 +3,7 @@ from PySide2.QtGui import QPixmap
 from PySide2.QtWidgets import QGraphicsPixmapItem
 import random
 
-from .base import Direction, Tank, TerrainType, TankType, Data
+from .base import Direction, Tank, TerrainType, TankType, Data, FoodType
 from .config import GameConfig
 
 cube_size = GameConfig.cube_size
@@ -115,7 +115,14 @@ class TankItem(QGraphicsPixmapItem):
             elif isinstance(item, TerrainItem):
                 if not item.terrain.tank_passable:
                     back = True
+                    if isinstance(self, EnemyItem):
+                        self.directions = [random.choice(
+                            list({Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT} - set(self.directions)))]
                     break
+            elif isinstance(item, FoodItem) and not isinstance(self, EnemyItem):
+                item.scene().foods.remove(item)
+                item.scene().removeItem(item)
+                self.get_food(item)
         if back:
             self.setX(x)
             self.setY(y)
@@ -123,12 +130,16 @@ class TankItem(QGraphicsPixmapItem):
     def shoot(self):
         if self.tank.ammo_storage > 0:
             self.tank.ammo_storage -= 1
-            ammo_png = QPixmap('../images/ammo.png').scaled(5, 8)
-            ammo = AmmoItem(ammo_png, self, self.direction)
-            self.scene().addItem(ammo)
+            if self.scene() is not None:
+                ammo_png = QPixmap('../images/ammo.png').scaled(5, 8)
+                ammo = AmmoItem(ammo_png, self, self.direction)
+                self.scene().addItem(ammo)
 
     def destroy(self):
         self.scene().destroy_tank(self)
+
+    def get_food(self, food_item):
+        pass
 
     def __str__(self):
         return self.tank.name
@@ -253,3 +264,38 @@ class AmmoItem(QGraphicsPixmapItem):
         self.tank.ammo_storage += 1
         if self.scene() is not None:
             self.scene().removeItem(self)
+
+
+class FoodItem(QGraphicsPixmapItem):
+    def __init__(self, food_type: FoodType = None):
+        QGraphicsPixmapItem.__init__(self)
+        self.food_type = FoodItem.random_food_type() if food_type is None else food_type
+        self.draw(self.food_type)
+        x = random.randint(0, content_width - cube_size)
+        y = random.randint(0, content_height - cube_size)
+        self.setX(x)
+        self.setY(y)
+        self.setZValue(20)
+
+    def draw(self, food_type):
+        png_path = '../images/%s'
+        if food_type == FoodType.Boom:
+            png_path = png_path % 'food_boom.png'
+        elif food_type == FoodType.CLOCK:
+            png_path = png_path % 'food_clock.png'
+        elif food_type == FoodType.IRON:
+            png_path = png_path % 'food_iron.png'
+        elif food_type == FoodType.GUN:
+            png_path = png_path % 'food_gun.png'
+        elif food_type == FoodType.PROTECT:
+            png_path = png_path % 'food_protect.png'
+        elif food_type == FoodType.STAR:
+            png_path = png_path % 'food_star.png'
+        elif food_type == FoodType.TANK:
+            png_path = png_path % 'food_tank.png'
+        png = QPixmap(png_path).scaled(cube_size, cube_size)
+        self.setPixmap(png)
+
+    @staticmethod
+    def random_food_type():
+        return random.choice(list(FoodType.__members__.values()))

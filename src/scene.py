@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QGraphicsScene, QGraphicsTextItem, QGraphicsRectIt
 
 from src.config import GameConfig
 from src.base import Direction, GameType, TankType, TerrainType, generate_random_map
-from src.item import TankItem, EnemyItem, TerrainItem, HomeItem
+from src.item import TankItem, EnemyItem, TerrainItem, HomeItem, FoodItem
 
 import random
 from collections import namedtuple
@@ -176,6 +176,7 @@ class GameScene(QGraphicsScene):
         self.enemies = []
         self.booms = []
         self.births = []
+        self.foods = []
         self.remain_enemies = GameConfig.enemies
         self.enemy_born_rects = [QRect(cube_size * i, 0, cube_size, cube_size) for i in GameConfig.enemy_born_columns]
         self.terrain_map = generate_random_map(columns, rows)
@@ -193,6 +194,9 @@ class GameScene(QGraphicsScene):
         self.terrain_animation_timer = QTimer()
         self.terrain_animation_timer.setInterval(250)
         self.terrain_animation_timer.timeout.connect(self.terrain_animation)
+        self.food_timer = QTimer()
+        self.food_timer.setInterval(3000)
+        self.food_timer.timeout.connect(self.generate_food)
 
     def start(self):
         self.started = True
@@ -203,6 +207,7 @@ class GameScene(QGraphicsScene):
         self.enemy_born_timer.start()
         self.boom_timer.start()
         self.terrain_animation_timer.start()
+        self.food_timer.start()
 
     def add_tank1(self, tank: TankItem):
         self.tank1 = tank
@@ -249,6 +254,7 @@ class GameScene(QGraphicsScene):
         self.add_boom(tank_item)
         self.removeItem(tank_item)
         if isinstance(tank_item, EnemyItem):
+            tank_item.auto_timer.stop()
             self.enemies.remove(tank_item)
             if self.remain_enemies == 0 and len(self.enemies) == 0:
                 self.next_stage()
@@ -304,6 +310,9 @@ class GameScene(QGraphicsScene):
             e.auto_timer.stop()
             self.removeItem(e)
         self.enemy_born_timer.stop()
+        self.boom_timer.stop()
+        self.terrain_animation_timer.stop()
+        self.food_timer.stop()
 
     def draw_terrain(self, terrain_list: list):
         size = int(cube_size / 2)
@@ -345,6 +354,11 @@ class GameScene(QGraphicsScene):
                     png = QPixmap('../images/water.png').scaled(size, size)
                     item.setData(0, 0)
                 item.setPixmap(png)
+
+    def generate_food(self):
+        food = FoodItem()
+        self.foods.append(food)
+        self.addItem(food)
 
     def keyPressEvent(self, event: QKeyEvent):
         if self.started:
