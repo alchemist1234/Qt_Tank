@@ -22,6 +22,12 @@ class GameConfig(object):
     _brick_area = [(9, 5), (9, 7), (8, 5), (8, 6), (8, 7)]
 
     # Game parameters
+
+    # Food
+    food_appear_interval = 3000
+
+    clock_time = 10000
+
     # Enemy
     enemies = 10
     max_enemies_in_field = 5

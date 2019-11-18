@@ -134,9 +134,7 @@ class TankItem(QGraphicsPixmapItem):
         if back:
             self.setX(x)
             self.setY(y)
-            return True
-        else:
-            return False
+        return back
 
     def shoot(self):
         if self.tank.ammo_storage > 0:
@@ -150,7 +148,22 @@ class TankItem(QGraphicsPixmapItem):
         self.scene().destroy_tank(self)
 
     def get_food(self, food_item):
-        pass
+        if food_item.food_type == FoodType.BOOM:
+            for e in self.scene().enemies[::-1]:
+                self.scene().destroy_tank(e)
+        elif food_item.food_type == FoodType.PROTECT:
+            pass
+        elif food_item.food_type == FoodType.IRON:
+            pass
+        elif food_item.food_type == FoodType.GUN:
+            pass
+        elif food_item.food_type == FoodType.CLOCK:
+            for e in self.scene().enemies:
+                e.freeze()
+        elif food_item.food_type == FoodType.TANK:
+            self.tank.lives += 1
+        elif food_item.food_type == FoodType.STAR:
+            pass
 
     def __str__(self):
         return self.tank.name
@@ -160,19 +173,24 @@ class EnemyItem(TankItem):
     def __init__(self, png):
         super().__init__(png, Direction.DOWN)
         self.setRotation(180)
+        self.frozen = False
+        self.freeze_timer = QTimer()
+        self.freeze_timer.setInterval(GameConfig.clock_time)
+        self.freeze_timer.timeout.connect(self.unfreeze)
 
     def move(self):
-        if super().move():
-            self.directions = [self.get_direction(self.direction)]
-        else:
-            change_score = random.randint(0, 99)
-            if change_score < GameConfig.enemy_change_weight * 100:
+        if not self.frozen:
+            if super().move():
                 self.directions = [self.get_direction(self.direction)]
-        if len(self.directions) == 0:
-            self.directions = [self.get_direction()]
-        shoot_score = random.randint(0, 99)
-        if shoot_score < GameConfig.enemy_shoot_weight * 100:
-            self.shoot()
+            else:
+                change_score = random.randint(0, 99)
+                if change_score < GameConfig.enemy_change_weight * 100:
+                    self.directions = [self.get_direction(self.direction)]
+            if len(self.directions) == 0:
+                self.directions = [self.get_direction()]
+            shoot_score = random.randint(0, 99)
+            if shoot_score < GameConfig.enemy_shoot_weight * 100:
+                self.shoot()
 
     def get_direction(self, wrong_direction: Direction = None):
         all_directions = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT]
@@ -187,6 +205,14 @@ class EnemyItem(TankItem):
         if wrong_direction is not None and wrong_direction in all_directions:
             all_directions.remove(wrong_direction)
         return random.choice(all_directions)
+
+    def unfreeze(self):
+        self.frozen = False
+        self.freeze_timer.stop()
+
+    def freeze(self):
+        self.frozen = True
+        self.freeze_timer.start()
 
 
 class AmmoItem(QGraphicsPixmapItem):
@@ -296,7 +322,7 @@ class FoodItem(QGraphicsPixmapItem):
 
     def draw(self, food_type):
         png_path = '../images/%s'
-        if food_type == FoodType.Boom:
+        if food_type == FoodType.BOOM:
             png_path = png_path % 'food_boom.png'
         elif food_type == FoodType.CLOCK:
             png_path = png_path % 'food_clock.png'

@@ -160,7 +160,7 @@ class Terrain(object):
 
 
 class FoodType(Enum):
-    Boom = 0,
+    BOOM = 0,
     CLOCK = 1,
     GUN = 2,
     IRON = 3,

@@ -195,7 +195,7 @@ class GameScene(QGraphicsScene):
         self.terrain_animation_timer.setInterval(250)
         self.terrain_animation_timer.timeout.connect(self.terrain_animation)
         self.food_timer = QTimer()
-        self.food_timer.setInterval(3000)
+        self.food_timer.setInterval(GameConfig.food_appear_interval)
         self.food_timer.timeout.connect(self.generate_food)
 
     def start(self):
