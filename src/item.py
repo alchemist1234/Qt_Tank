@@ -41,7 +41,8 @@ class TankItem(QGraphicsPixmapItem):
         self.move_timer.timeout.connect(self.move)
         self.move_timer.start()
 
-    def move(self):
+    def move(self) -> bool:
+        stop = False
         x, y = self.x(), self.y()
         if len(self.directions) != 0:
             d = self.directions[-1]
@@ -61,20 +62,26 @@ class TankItem(QGraphicsPixmapItem):
             else:
                 self.setRotation(90)
                 self.moveBy(self.tank.speed, 0)
-            self.check_edge()
+            stop = stop or self.check_edge()
         else:
             self.check_pos()
-        self.check_collide(x, y)
+        return stop or self.check_collide(x, y)
 
-    def check_edge(self):
+    def check_edge(self) -> bool:
+        stop = False
         if self.x() < 0:
             self.setX(0)
+            stop = True
         if self.x() > content_width - cube_size:
             self.setX(content_width - cube_size)
+            stop = True
         if self.y() < 0:
             self.setY(0)
+            stop = True
         if self.y() > content_height - cube_size:
             self.setY(content_height - cube_size)
+            stop = True
+        return stop
 
     def check_pos(self):
         if self.direction == Direction.UP or self.direction == Direction.DOWN:
@@ -105,7 +112,7 @@ class TankItem(QGraphicsPixmapItem):
                     else:
                         self.moveBy(0, -pos)
 
-    def check_collide(self, x, y):
+    def check_collide(self, x, y) -> bool:
         colliding_items = self.collidingItems(mode=Qt.IntersectsItemBoundingRect)
         back = False
         for item in colliding_items:
@@ -117,7 +124,8 @@ class TankItem(QGraphicsPixmapItem):
                     back = True
                     if isinstance(self, EnemyItem):
                         self.directions = [random.choice(
-                            list({Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT} - set(self.directions)))]
+                            list({Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT} - set(
+                                self.directions)))]
                     break
             elif isinstance(item, FoodItem) and not isinstance(self, EnemyItem):
                 item.scene().foods.remove(item)
@@ -126,6 +134,9 @@ class TankItem(QGraphicsPixmapItem):
         if back:
             self.setX(x)
             self.setY(y)
+            return True
+        else:
+            return False
 
     def shoot(self):
         if self.tank.ammo_storage > 0:
@@ -149,27 +160,33 @@ class EnemyItem(TankItem):
     def __init__(self, png):
         super().__init__(png, Direction.DOWN)
         self.setRotation(180)
-        self.auto_timer = QTimer()
-        self.auto_timer.setInterval(500)
-        self.auto_timer.timeout.connect(self.auto)
-        self.auto_timer.start()
 
-    def auto(self):
-        change_score = random.randint(0, 99)
-        if change_score < 40 or len(self.directions) == 0:
-            directions = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT]
-            if self.x() < cube_size:
-                directions.remove(Direction.LEFT)
-            if self.x() > content_width - cube_size:
-                directions.remove(Direction.RIGHT)
-            if self.y() < cube_size:
-                directions.remove(Direction.UP)
-            if self.y() > content_height - cube_size:
-                directions.remove(Direction.DOWN)
-            self.directions = [random.choice(directions)]
+    def move(self):
+        if super().move():
+            self.directions = [self.get_direction(self.direction)]
+        else:
+            change_score = random.randint(0, 99)
+            if change_score < GameConfig.enemy_change_weight * 100:
+                self.directions = [self.get_direction(self.direction)]
+        if len(self.directions) == 0:
+            self.directions = [self.get_direction()]
         shoot_score = random.randint(0, 99)
         if shoot_score < GameConfig.enemy_shoot_weight * 100:
             self.shoot()
+
+    def get_direction(self, wrong_direction: Direction = None):
+        all_directions = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT]
+        if self.x() < cube_size:
+            all_directions.remove(Direction.LEFT)
+        if self.x() > content_width - cube_size:
+            all_directions.remove(Direction.RIGHT)
+        if self.y() < cube_size:
+            all_directions.remove(Direction.UP)
+        if self.y() > content_height - cube_size:
+            all_directions.remove(Direction.DOWN)
+        if wrong_direction is not None and wrong_direction in all_directions:
+            all_directions.remove(wrong_direction)
+        return random.choice(all_directions)
 
 
 class AmmoItem(QGraphicsPixmapItem):

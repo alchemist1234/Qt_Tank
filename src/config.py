@@ -31,7 +31,8 @@ class GameConfig(object):
     _enemy_2_weight = 0.3
     _enemy_3_weight = 0.1
 
-    enemy_shoot_weight = 0.4
+    enemy_shoot_weight = 0.02
+    enemy_change_weight = 0.01
 
     # Player
     player_lives = 1

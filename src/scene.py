@@ -254,7 +254,6 @@ class GameScene(QGraphicsScene):
         self.add_boom(tank_item)
         self.removeItem(tank_item)
         if isinstance(tank_item, EnemyItem):
-            tank_item.auto_timer.stop()
             self.enemies.remove(tank_item)
             if self.remain_enemies == 0 and len(self.enemies) == 0:
                 self.next_stage()
@@ -307,7 +306,6 @@ class GameScene(QGraphicsScene):
         if self.tank2 is not None:
             self.removeItem(self.tank2)
         for e in self.enemies:
-            e.auto_timer.stop()
             self.removeItem(e)
         self.enemy_born_timer.stop()
         self.boom_timer.stop()
