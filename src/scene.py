@@ -205,8 +205,10 @@ class GameScene(QGraphicsScene):
         self.started = True
         self.remain_enemies = GameConfig.enemies
         self.add_tank1(self.tank1)
+        self.tank1.protect(GameConfig.born_protect_time)
         if self.tank2 is not None:
             self.add_tank2(self.tank2)
+            self.tank2.protect(GameConfig.born_protect_time)
         self.enemy_born_timer.start()
         self.boom_timer.start()
         self.terrain_animation_timer.start()

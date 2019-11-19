@@ -27,6 +27,8 @@ class GameConfig(object):
     food_appear_interval = 3000
 
     enemy_freeze_time = 10000
+    born_protect_time = 3000
+    food_protect_time = 10000
 
     # Enemy
     enemies = 10

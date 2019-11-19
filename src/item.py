@@ -35,11 +35,18 @@ class TankItem(QGraphicsPixmapItem):
         self.directions = []
         self.direction = direction
         self.tank = Tank(tank)
+        self.protected = False
+        self.protect_item = None
         self.setTransformOriginPoint(cube_size / 2, cube_size / 2)
         self.move_timer = QTimer()
         self.move_timer.setInterval(interval)
         self.move_timer.timeout.connect(self.move)
         self.move_timer.start()
+        self.protect_timer = QTimer()
+        self.protect_timer.timeout.connect(self.unprotect)
+        self.protect_animation_timer = QTimer()
+        self.protect_animation_timer.setInterval(100)
+        self.protect_animation_timer.timeout.connect(self.protect_animation)
 
     def move(self) -> bool:
         stop = False
@@ -65,7 +72,12 @@ class TankItem(QGraphicsPixmapItem):
             stop = stop or self.check_edge()
         else:
             self.check_pos()
-        return stop or self.check_collide(x, y)
+
+        stop = stop or self.check_collide(x, y)
+        if self.protect_item is not None:
+            self.protect_item.setX(self.x())
+            self.protect_item.setY(self.y())
+        return stop
 
     def check_edge(self) -> bool:
         stop = False
@@ -152,7 +164,7 @@ class TankItem(QGraphicsPixmapItem):
             for e in self.scene().enemies[::-1]:
                 self.scene().destroy_tank(e)
         elif food_item.food_type == FoodType.PROTECT:
-            pass
+            self.protect(GameConfig.food_protect_time)
         elif food_item.food_type == FoodType.IRON:
             pass
         elif food_item.food_type == FoodType.GUN:
@@ -163,6 +175,36 @@ class TankItem(QGraphicsPixmapItem):
             self.tank.lives += 1
         elif food_item.food_type == FoodType.STAR:
             pass
+
+    def protect(self, time):
+        self.protected = True
+        protect_png = QPixmap('../images/protect.png').copy(0, 0, 48, 48).scaled(cube_size, cube_size)
+        self.protect_item = QGraphicsPixmapItem(protect_png)
+        self.protect_item.setData(0, 0)
+        self.protect_item.setX(self.x())
+        self.protect_item.setY(self.y())
+        self.protect_item.setZValue(10)
+        self.scene().addItem(self.protect_item)
+        self.protect_timer.setInterval(time)
+        self.protect_timer.start()
+        self.protect_animation_timer.start()
+
+    def unprotect(self):
+        self.protect_animation_timer.stop()
+        self.protect_timer.stop()
+        self.protected = False
+        self.scene().removeItem(self.protect_item)
+        self.protect_item = None
+
+    def protect_animation(self):
+        pic_no = self.protect_item.data(0)
+        if pic_no == 0:
+            pic_no = 1
+        else:
+            pic_no = 0
+        self.protect_item.setData(0, pic_no)
+        protect_png = QPixmap('../images/protect.png').copy(pic_no * 48, 0, 48, 48).scaled(cube_size, cube_size)
+        self.protect_item.setPixmap(protect_png)
 
     def __str__(self):
         return self.tank.name
@@ -267,7 +309,7 @@ class AmmoItem(QGraphicsPixmapItem):
             if isinstance(item, TankItem):
                 if self.tank == item.tank:
                     continue
-                if self.tank.is_player != item.tank.is_player:
+                if self.tank.is_player != item.tank.is_player and not item.protected:
                     if self.tank.is_player:
                         self.score(item.tank)
                     item.destroy()
