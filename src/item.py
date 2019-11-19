@@ -14,8 +14,23 @@ data = Data()
 
 
 class TerrainItem(QGraphicsPixmapItem):
-    def __init__(self, png: QPixmap, terrain: TerrainType):
-        super().__init__(png)
+    def __init__(self, terrain: TerrainType):
+        super().__init__()
+        png = QPixmap()
+        if terrain == TerrainType.BRICK:
+            png.load('../images/brick.png')
+        elif terrain == TerrainType.STEEL:
+            png.load('../images/steel.png')
+        elif terrain == TerrainType.GRASS:
+            png.load('../images/grass.png')
+            self.setZValue(10)
+        elif terrain == TerrainType.WATER:
+            png.load('../images/water.png')
+            self.setData(0, 0)
+        else:
+            return
+        png = png.scaled(cube_size // 2, cube_size // 2)
+        self.setPixmap(png)
         self.terrain = terrain
 
 
@@ -166,7 +181,7 @@ class TankItem(QGraphicsPixmapItem):
         elif food_item.food_type == FoodType.PROTECT:
             self.protect(GameConfig.food_protect_time)
         elif food_item.food_type == FoodType.IRON:
-            pass
+            self.scene().protect_home()
         elif food_item.food_type == FoodType.GUN:
             pass
         elif food_item.food_type == FoodType.CLOCK:
@@ -205,6 +220,16 @@ class TankItem(QGraphicsPixmapItem):
         self.protect_item.setData(0, pic_no)
         protect_png = QPixmap('../images/protect.png').copy(pic_no * 48, 0, 48, 48).scaled(cube_size, cube_size)
         self.protect_item.setPixmap(protect_png)
+
+    def upgrade(self):
+        if self.tank.lv < 3:
+            self.tank.lv += 1
+            self.tank.power += 5
+
+        pass
+
+    def downgrade(self):
+        pass
 
     def __str__(self):
         return self.tank.name
@@ -321,12 +346,12 @@ class AmmoItem(QGraphicsPixmapItem):
             self.destroy()
 
     def score(self, enemy: Tank):
-        if self.tank.type == TankType.PLAYER_ONE:
+        if self.tank.type == TankType.PLAYER_1:
             if enemy.type in data.player_1_kills:
                 data.player_1_kills[enemy.type] += 1
             else:
                 data.player_1_kills[enemy.type] = 1
-        elif self.tank.type == TankType.PLAYER_TWO:
+        elif self.tank.type == TankType.PLAYER_2:
             if enemy.type in data.player_2_kills:
                 data.player_2_kills[enemy.type] += 1
             else:

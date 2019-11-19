@@ -19,8 +19,8 @@ class MainWindow(QMainWindow):
         self.start_scene = StartScene(self)
         self.game_over_scene = GameOverScene(self)
         self.main_widget = QWidget()
-        self.mask_view = QGraphicsView(self.main_widget)
         self.graph_view = QGraphicsView(self.main_widget)
+        self.mask_view = QGraphicsView(self.main_widget)
         self.data = Data()
         self.init()
 
@@ -36,8 +36,10 @@ class MainWindow(QMainWindow):
         self.graph_view.setGeometry(QRect(5, 5, content_width + 5, content_height + 5))
         self.graph_view.setScene(self.start_scene)
         self.setCentralWidget(self.main_widget)
-        # Focus next child twice to make sure focus in graphic view not mask view
-        self.main_widget.focusNextChild()
+        self.mask_view.focusInEvent = self._mask_focus_in_event
+
+    def _mask_focus_in_event(self, e):
+        # make graph view get focus
         self.main_widget.focusNextChild()
 
     def ready(self):

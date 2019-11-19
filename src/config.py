@@ -20,8 +20,11 @@ class GameConfig(object):
     _steel_area = [(5, 6)]
     _home_area = (9, 6)
     _brick_area = [(9, 5), (9, 7), (8, 5), (8, 6), (8, 7)]
+    _home_guard_area = [(9, 5), (9, 7), (8, 5), (8, 6), (8, 7)]
 
     # Game parameters
+    max_power = 20
+    max_hit_point = 20
 
     # Food
     food_appear_interval = 3000
@@ -29,6 +32,7 @@ class GameConfig(object):
     enemy_freeze_time = 10000
     born_protect_time = 3000
     food_protect_time = 10000
+    protect_home_time = 15000
 
     # Enemy
     enemies = 10
@@ -84,6 +88,10 @@ class GameConfig(object):
     @classmethod
     def home_area(cls):
         return cls._home_area
+
+    @classmethod
+    def home_guard_area(cls):
+        return cls._home_guard_area
 
     @classmethod
     def enemy_weights(cls):

@@ -1,9 +1,9 @@
 from PySide2.QtCore import QTimer, Qt, QRect
-from PySide2.QtGui import QPixmap, QKeyEvent, QBrush, QFont, QPen, QMovie
+from PySide2.QtGui import QPixmap, QKeyEvent, QBrush, QFont, QPen, QMovie, QTransform
 from PySide2.QtWidgets import QGraphicsScene, QGraphicsTextItem, QGraphicsRectItem, QGraphicsPixmapItem
 
 from src.config import GameConfig
-from src.base import Direction, GameType, TankType, TerrainType, generate_random_map
+from src.base import Direction, GameType, TankType, TerrainType, generate_random_map, Terrain
 from src.item import TankItem, EnemyItem, TerrainItem, HomeItem, FoodItem
 
 import random
@@ -137,7 +137,7 @@ class StartScene(QGraphicsScene):
         self.addItem(self.one_play_text_item)
         self.addItem(self.two_plays_text_item)
 
-        png = QPixmap('../images/%s' % TankType.PLAYER_ONE.pic).scaled(25, 25)
+        png = QPixmap('../images/%s' % TankType.PLAYER_1.pic).scaled(25, 25)
         self.indicator_item = QGraphicsPixmapItem(png)
         self.indicator_item.setRotation(90)
         self.indicator_item.setX(260)
@@ -168,8 +168,8 @@ class GameScene(QGraphicsScene):
         self.main_window = main_window
         self.game_type = game_type
         self.started = False
-        self.tank1 = TankItem(TankType.PLAYER_ONE, Direction.UP)
-        self.tank2 = TankItem(TankType.PLAYER_TWO, Direction.UP) if game_type == GameType.TWO_PLAYERS else None
+        self.tank1 = TankItem(TankType.PLAYER_1, Direction.UP)
+        self.tank2 = TankItem(TankType.PLAYER_2, Direction.UP) if game_type == GameType.TWO_PLAYERS else None
         self.home = HomeItem()
         self.addItem(self.home)
         self.enemies = []
@@ -200,6 +200,9 @@ class GameScene(QGraphicsScene):
         self.enemy_freeze_timer = QTimer()
         self.enemy_freeze_timer.setInterval(GameConfig.enemy_freeze_time)
         self.enemy_freeze_timer.timeout.connect(self.enemy_unfreeze)
+        self.protect_home_timer = QTimer()
+        self.protect_home_timer.setInterval(GameConfig.protect_home_time)
+        self.protect_home_timer.timeout.connect(self.protect_home_timeout)
 
     def start(self):
         self.started = True
@@ -267,12 +270,12 @@ class GameScene(QGraphicsScene):
             self.tank1 = None
             if self.main_window.data.player_1_lives > 0:
                 self.main_window.data.player_1_lives -= 1
-                self.add_tank1(TankItem(TankType.PLAYER_ONE, Direction.UP))
+                self.add_tank1(TankItem(TankType.PLAYER_1, Direction.UP))
         elif tank_item == self.tank2:
             self.tank2 = None
             if self.main_window.data.player_2_lives > 0:
                 self.main_window.data.player_2_lives -= 1
-                self.add_tank2(TankItem(TankType.PLAYER_TWO, Direction.UP))
+                self.add_tank2(TankItem(TankType.PLAYER_2, Direction.UP))
 
         if (self.tank1 is None and self.main_window.data.player_1_lives == 0
                 and ((self.main_window.data.game_type == GameType.TWO_PLAYERS
@@ -334,27 +337,13 @@ class GameScene(QGraphicsScene):
         size = int(cube_size / 2)
         for r, line in enumerate(terrain_list):
             for c, cell in enumerate(line):
-                png = QPixmap()
-                if cell.terrain == TerrainType.BRICK:
-                    png.load('../images/brick.png')
-                elif cell.terrain == TerrainType.STEEL:
-                    png.load('../images/steel.png')
-                elif cell.terrain == TerrainType.GRASS:
-                    png.load('../images/grass.png')
-                elif cell.terrain == TerrainType.WATER:
-                    png.load('../images/water.png')
-                else:
+                if cell.terrain == TerrainType.BLANK:
                     continue
-                png = png.scaled(size, size)
                 for index, state in enumerate(cell.state):
                     x = c * cube_size + index % 2 * size
                     y = r * cube_size + index // 2 * size
                     if state:
-                        item = TerrainItem(png, cell.terrain)
-                        if cell.terrain == TerrainType.GRASS:
-                            item.setZValue(10)
-                        if cell.terrain == TerrainType.WATER:
-                            item.setData(0, 0)
+                        item = TerrainItem(cell.terrain)
                         item.setX(x)
                         item.setY(y)
                         self.addItem(item)
@@ -375,6 +364,41 @@ class GameScene(QGraphicsScene):
         food = FoodItem()
         self.foods.append(food)
         self.addItem(food)
+
+    def protect_home(self):
+        self.protect_home_timer.start()
+        self._remove_home_guard()
+        self._fill_home_guard(TerrainType.STEEL)
+
+    def protect_home_timeout(self):
+        self.protect_home_timer.stop()
+        self._remove_home_guard()
+        self._fill_home_guard(TerrainType.BRICK)
+
+    def _remove_home_guard(self):
+        for (row, col) in GameConfig.home_guard_area():
+            item = self.itemAt(col * cube_size, row * cube_size, QTransform())
+            if item is not None:
+                self.removeItem(item)
+
+    def _fill_home_guard(self, terrain_type: TerrainType):
+        for (row, col) in GameConfig.home_guard_area():
+            item_left_top = TerrainItem(terrain_type)
+            item_left_bottom = TerrainItem(terrain_type)
+            item_right_top = TerrainItem(terrain_type)
+            item_right_bottom = TerrainItem(terrain_type)
+            item_left_top.setX(col * cube_size)
+            item_left_top.setY(row * cube_size)
+            item_left_bottom.setX(col * cube_size)
+            item_left_bottom.setY(row * cube_size + cube_size // 2)
+            item_right_top.setX(col * cube_size + cube_size // 2)
+            item_right_top.setY(row * cube_size)
+            item_right_bottom.setX(col * cube_size + cube_size // 2)
+            item_right_bottom.setY(row * cube_size + cube_size // 2)
+            self.addItem(item_left_top)
+            self.addItem(item_left_bottom)
+            self.addItem(item_right_top)
+            self.addItem(item_right_bottom)
 
     def keyPressEvent(self, event: QKeyEvent):
         if self.started:
