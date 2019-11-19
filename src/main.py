@@ -19,8 +19,8 @@ class MainWindow(QMainWindow):
         self.start_scene = StartScene(self)
         self.game_over_scene = GameOverScene(self)
         self.main_widget = QWidget()
-        self.graph_view = QGraphicsView(self.main_widget)
         self.mask_view = QGraphicsView(self.main_widget)
+        self.graph_view = QGraphicsView(self.main_widget)
         self.data = Data()
         self.init()
 
@@ -28,14 +28,17 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('QTank')
         self.resize(content_width + 20, content_height + 20)
 
-        self.graph_view.setGeometry(QRect(5, 5, content_width + 5, content_height + 5))
-        self.graph_view.setScene(self.start_scene)
-
         self.mask_view.setSceneRect(0, 0, content_width, content_height)
         self.mask_view.setGeometry(QRect(5, 5, content_width + 5, content_height + 5))
         self.mask_view.setStyleSheet('background: transparent')
         self.mask_view.setScene(self.mask_scene)
+
+        self.graph_view.setGeometry(QRect(5, 5, content_width + 5, content_height + 5))
+        self.graph_view.setScene(self.start_scene)
         self.setCentralWidget(self.main_widget)
+        # Focus next child twice to make sure focus in graphic view not mask view
+        self.main_widget.focusNextChild()
+        self.main_widget.focusNextChild()
 
     def ready(self):
         self.data.stage = 1

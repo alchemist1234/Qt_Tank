@@ -158,8 +158,7 @@ class TankItem(QGraphicsPixmapItem):
         elif food_item.food_type == FoodType.GUN:
             pass
         elif food_item.food_type == FoodType.CLOCK:
-            for e in self.scene().enemies:
-                e.freeze()
+            self.scene().enemy_freeze()
         elif food_item.food_type == FoodType.TANK:
             self.tank.lives += 1
         elif food_item.food_type == FoodType.STAR:
@@ -174,9 +173,6 @@ class EnemyItem(TankItem):
         super().__init__(png, Direction.DOWN)
         self.setRotation(180)
         self.frozen = False
-        self.freeze_timer = QTimer()
-        self.freeze_timer.setInterval(GameConfig.clock_time)
-        self.freeze_timer.timeout.connect(self.unfreeze)
 
     def move(self):
         if not self.frozen:
@@ -205,14 +201,6 @@ class EnemyItem(TankItem):
         if wrong_direction is not None and wrong_direction in all_directions:
             all_directions.remove(wrong_direction)
         return random.choice(all_directions)
-
-    def unfreeze(self):
-        self.frozen = False
-        self.freeze_timer.stop()
-
-    def freeze(self):
-        self.frozen = True
-        self.freeze_timer.start()
 
 
 class AmmoItem(QGraphicsPixmapItem):

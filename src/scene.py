@@ -7,7 +7,6 @@ from src.base import Direction, GameType, TankType, TerrainType, generate_random
 from src.item import TankItem, EnemyItem, TerrainItem, HomeItem, FoodItem
 
 import random
-from collections import namedtuple
 
 columns = GameConfig.columns
 rows = GameConfig.rows
@@ -179,6 +178,7 @@ class GameScene(QGraphicsScene):
         self.foods = []
         self.remain_enemies = GameConfig.enemies
         self.enemy_born_rects = [QRect(cube_size * i, 0, cube_size, cube_size) for i in GameConfig.enemy_born_columns]
+        self.enemy_frozen = False
         self.terrain_map = generate_random_map(columns, rows)
         self.draw_terrain(self.terrain_map)
         brush = QBrush()
@@ -197,6 +197,9 @@ class GameScene(QGraphicsScene):
         self.food_timer = QTimer()
         self.food_timer.setInterval(GameConfig.food_appear_interval)
         self.food_timer.timeout.connect(self.generate_food)
+        self.enemy_freeze_timer = QTimer()
+        self.enemy_freeze_timer.setInterval(GameConfig.enemy_freeze_time)
+        self.enemy_freeze_timer.timeout.connect(self.enemy_unfreeze)
 
     def start(self):
         self.started = True
@@ -247,6 +250,7 @@ class GameScene(QGraphicsScene):
                 self.remain_enemies -= 1
                 enemy.setX(x)
                 enemy.setY(0)
+                enemy.frozen = self.enemy_frozen
                 self.enemies.append(enemy)
                 self.addItem(enemy)
 
@@ -295,6 +299,18 @@ class GameScene(QGraphicsScene):
         boom_item.setData(0, 0)
         self.addItem(boom_item)
         self.booms.append(boom_item)
+
+    def enemy_freeze(self):
+        self.enemy_frozen = True
+        for e in self.enemies:
+            e.frozen = True
+        self.enemy_freeze_timer.start()
+
+    def enemy_unfreeze(self):
+        self.enemy_frozen = False
+        for e in self.enemies:
+            e.frozen = False
+        self.enemy_freeze_timer.stop()
 
     def next_stage(self):
         self.main_window.data.stage += 1
