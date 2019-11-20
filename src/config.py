@@ -27,7 +27,7 @@ class GameConfig(object):
     max_hit_point = 20
 
     # Food
-    food_appear_interval = 3000
+    food_appear_interval = 30000
 
     enemy_freeze_time = 10000
     born_protect_time = 3000
@@ -35,7 +35,7 @@ class GameConfig(object):
     protect_home_time = 15000
 
     # Enemy
-    enemies = 10
+    enemies = 15
     max_enemies_in_field = 5
     enemy_born_columns = [(13 - 1) / 2 * i for i in range(3)]
 

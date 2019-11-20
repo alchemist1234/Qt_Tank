@@ -320,7 +320,7 @@ class GameScene(QGraphicsScene):
         for appear in self.appears:
             pic_no = appear.data(0)
             cycle = appear.data(1)
-            if pic_no >= 2 and cycle >= 3:
+            if pic_no >= 2 and cycle >= 2:
                 self.removeItem(appear)
                 self.appears.remove(appear)
                 tank = self.appear_tanks.pop(id(appear))
