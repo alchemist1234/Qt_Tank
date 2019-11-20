@@ -47,7 +47,7 @@ class GameConfig(object):
     enemy_change_weight = 0.01
 
     # Player
-    player_lives = 1
+    player_lives = 3
 
     player_1_control_up = Qt.Key_W
     player_1_control_down = Qt.Key_S

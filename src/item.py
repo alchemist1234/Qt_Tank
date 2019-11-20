@@ -50,11 +50,14 @@ class HomeItem(QGraphicsPixmapItem):
 
 class TankItem(QGraphicsPixmapItem):
     def __init__(self, tank, direction: Direction):
-        png = QPixmap('../images/%s' % tank.pic).scaled(cube_size, cube_size)
+        self.tank = Tank(tank)
+        if self.tank.type == TankType.PLAYER_1 or self.tank.type == TankType.PLAYER_2:
+            png = QPixmap('../images/%s' % tank.pic).copy(0, 0, 48, 48).scaled(cube_size, cube_size)
+        else:
+            png = QPixmap('../images/%s' % tank.pic).scaled(cube_size, cube_size)
         QGraphicsPixmapItem.__init__(self, png)
         self.directions = []
         self.direction = direction
-        self.tank = Tank(tank)
         self.protected = False
         self.protect_item = None
         self.setTransformOriginPoint(cube_size / 2, cube_size / 2)

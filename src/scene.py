@@ -137,7 +137,7 @@ class StartScene(QGraphicsScene):
         self.addItem(self.one_play_text_item)
         self.addItem(self.two_plays_text_item)
 
-        png = QPixmap('../images/%s' % TankType.PLAYER_1.pic).scaled(25, 25)
+        png = QPixmap('../images/%s' % TankType.PLAYER_1.pic).copy(0, 0, 48, 48).scaled(25, 25)
         self.indicator_item = QGraphicsPixmapItem(png)
         self.indicator_item.setRotation(90)
         self.indicator_item.setX(260)
