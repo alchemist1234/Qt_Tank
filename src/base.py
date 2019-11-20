@@ -68,11 +68,11 @@ class TerrainType(Enum):
 
 
 class TankType(Enum):
-    PLAYER_1 = 'Player 1', 3, 10, 10, 3, 3, 10, 0, True, 'player_tank_1.png'
-    PLAYER_2 = 'Player 2', 3, 10, 10, 3, 3, 10, 0, True, 'player_tank_2.png'
-    ENEMY_1 = 'Enemy 1', 1, 10, 10, 3, 3, 10, 100, False, 'tank_1.png'
-    ENEMY_2 = 'Enemy 2', 1, 10, 10, 3, 4, 15, 150, False, 'tank_2.png'
-    ENEMY_3 = 'Enemy 3', 1, 40, 10, 3, 2, 7, 200, False, 'tank_3.png'
+    PLAYER_1 = 'Player 1', 3, 10, 10, 3, 3, 8, 0, True, 'player_tank_1.png'
+    PLAYER_2 = 'Player 2', 3, 10, 10, 3, 3, 8, 0, True, 'player_tank_2.png'
+    ENEMY_1 = 'Enemy 1', 1, 10, 10, 3, 3, 8, 100, False, 'tank_1.png'
+    ENEMY_2 = 'Enemy 2', 1, 10, 10, 3, 4, 10, 150, False, 'tank_2.png'
+    ENEMY_3 = 'Enemy 3', 1, 40, 10, 3, 2, 6, 200, False, 'tank_3.png'
 
     def __init__(self, tank_name: str, lives: int, hit_point: int, power: int,
                  max_storage: int, speed: int, ammo_speed: int, score: int,

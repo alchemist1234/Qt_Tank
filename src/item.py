@@ -239,7 +239,7 @@ class TankItem(QGraphicsPixmapItem):
         elif self.tank.lv < 3:
             self.tank.lv += 1
             self.tank.power += 5
-        png = QPixmap(self.tank.pic).copy((self.tank.lv - 1) * 48, 0, 48, 48).scaled(cube_size, cube_size)
+        png = QPixmap('../images/%s' % self.tank.pic).copy((self.tank.lv - 1) * 48, 0, 48, 48).scaled(cube_size, cube_size)
         self.setPixmap(png)
 
     def downgrade(self):
