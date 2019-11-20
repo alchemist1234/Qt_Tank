@@ -194,13 +194,13 @@ class TankItem(QGraphicsPixmapItem):
         elif food_item.food_type == FoodType.IRON:
             self.scene().protect_home()
         elif food_item.food_type == FoodType.GUN:
-            pass
+            self.upgrade(True)
         elif food_item.food_type == FoodType.CLOCK:
             self.scene().enemy_freeze()
         elif food_item.food_type == FoodType.TANK:
             self.tank.lives += 1
         elif food_item.food_type == FoodType.STAR:
-            pass
+            self.upgrade()
 
     def protect(self, time):
         self.protected = True
@@ -232,12 +232,15 @@ class TankItem(QGraphicsPixmapItem):
         protect_png = QPixmap('../images/protect.png').copy(pic_no * 48, 0, 48, 48).scaled(cube_size, cube_size)
         self.protect_item.setPixmap(protect_png)
 
-    def upgrade(self):
-        if self.tank.lv < 3:
+    def upgrade(self, top_lv: bool = False):
+        if top_lv:
+            self.tank.lv = 3
+            self.tank.power = GameConfig.max_power
+        elif self.tank.lv < 3:
             self.tank.lv += 1
             self.tank.power += 5
-
-        pass
+        png = QPixmap(self.tank.pic).copy((self.tank.lv - 1) * 48, 0, 48, 48).scaled(cube_size, cube_size)
+        self.setPixmap(png)
 
     def downgrade(self):
         pass
