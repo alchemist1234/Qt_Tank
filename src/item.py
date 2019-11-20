@@ -56,12 +56,15 @@ class TankItem(QGraphicsPixmapItem):
         self.move_timer = QTimer()
         self.move_timer.setInterval(interval)
         self.move_timer.timeout.connect(self.move)
-        self.move_timer.start()
+        # self.move_timer.start()
         self.protect_timer = QTimer()
         self.protect_timer.timeout.connect(self.unprotect)
         self.protect_animation_timer = QTimer()
         self.protect_animation_timer.setInterval(100)
         self.protect_animation_timer.timeout.connect(self.protect_animation)
+
+    def start_move(self):
+        self.move_timer.start()
 
     def move(self) -> bool:
         stop = False

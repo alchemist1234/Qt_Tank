@@ -174,7 +174,8 @@ class GameScene(QGraphicsScene):
         self.addItem(self.home)
         self.enemies = []
         self.booms = []
-        self.births = []
+        self.appears = []
+        self.appear_tanks = {}
         self.foods = []
         self.remain_enemies = GameConfig.enemies
         self.enemy_born_rects = [QRect(cube_size * i, 0, cube_size, cube_size) for i in GameConfig.enemy_born_columns]
@@ -191,6 +192,9 @@ class GameScene(QGraphicsScene):
         self.boom_timer = QTimer()
         self.boom_timer.setInterval(100)
         self.boom_timer.timeout.connect(self.boom_animation)
+        self.appear_timer = QTimer()
+        self.appear_timer.setInterval(200)
+        self.appear_timer.timeout.connect(self.appear_animation)
         self.terrain_animation_timer = QTimer()
         self.terrain_animation_timer.setInterval(250)
         self.terrain_animation_timer.timeout.connect(self.terrain_animation)
@@ -208,12 +212,11 @@ class GameScene(QGraphicsScene):
         self.started = True
         self.remain_enemies = GameConfig.enemies
         self.add_tank1(self.tank1)
-        self.tank1.protect(GameConfig.born_protect_time)
         if self.tank2 is not None:
             self.add_tank2(self.tank2)
-            self.tank2.protect(GameConfig.born_protect_time)
         self.enemy_born_timer.start()
         self.boom_timer.start()
+        self.appear_timer.start()
         self.terrain_animation_timer.start()
         self.food_timer.start()
 
@@ -221,13 +224,15 @@ class GameScene(QGraphicsScene):
         self.tank1 = tank
         self.tank1.setX(4 * cube_size)
         self.tank1.setY(content_height - cube_size)
-        self.addItem(tank)
+        appear_id = self.add_appear(4 * cube_size, content_height - cube_size)
+        self.appear_tanks[appear_id] = self.tank1
 
     def add_tank2(self, tank: TankItem):
         self.tank2 = tank
         self.tank2.setX(8 * cube_size)
         self.tank2.setY(content_height - cube_size)
-        self.addItem(tank)
+        appear_id = self.add_appear(8 * cube_size, content_height - cube_size)
+        self.appear_tanks[appear_id] = self.tank2
 
     def add_enemy(self):
         if self.remain_enemies > 0 and len(self.enemies) < GameConfig.max_enemies_in_field:
@@ -256,8 +261,8 @@ class GameScene(QGraphicsScene):
                 enemy.setX(x)
                 enemy.setY(0)
                 enemy.frozen = self.enemy_frozen
-                self.enemies.append(enemy)
-                self.addItem(enemy)
+                appear_id = self.add_appear(x, 0)
+                self.appear_tanks[appear_id] = enemy
 
     def destroy_tank(self, tank_item: TankItem):
         self.add_boom(tank_item)
@@ -295,6 +300,42 @@ class GameScene(QGraphicsScene):
                 boom.setData(0, pic_no)
                 png = QPixmap('../images/boom_dynamic.png').copy(96 * pic_no, 0, 96, 96).scaled(cube_size, cube_size)
                 boom.setPixmap(png)
+
+    def add_appear(self, x, y):
+        png = QPixmap('../images/appear.png').copy(0, 0, 48, 48).scaled(cube_size, cube_size)
+        appear = QGraphicsPixmapItem(png)
+        appear.setData(0, 0)
+        appear.setData(1, 0)
+        appear.setX(x)
+        appear.setY(y)
+        self.appears.append(appear)
+        self.addItem(appear)
+        return id(appear)
+
+    def appear_animation(self):
+        for appear in self.appears:
+            pic_no = appear.data(0)
+            cycle = appear.data(1)
+            if pic_no >= 2 and cycle >= 3:
+                self.removeItem(appear)
+                self.appears.remove(appear)
+                tank = self.appear_tanks.pop(id(appear))
+                self.addItem(tank)
+                tank.start_move()
+                if isinstance(tank, EnemyItem):
+                    self.enemies.append(tank)
+                elif isinstance(tank, TankItem):
+                    tank.protect(GameConfig.born_protect_time)
+            else:
+                if pic_no >= 2:
+                    pic_no = 0
+                    cycle += 1
+                else:
+                    pic_no += 1
+                appear.setData(0, pic_no)
+                appear.setData(1, cycle)
+                png = QPixmap('../images/appear.png').copy(48 * pic_no, 0, 48, 48).scaled(cube_size, cube_size)
+                appear.setPixmap(png)
 
     def add_boom(self, item):
         boom_png = QPixmap('../images/boom_dynamic.png').copy(0, 0, 96, 96).scaled(cube_size, cube_size)
