@@ -207,6 +207,10 @@ class GameScene(QGraphicsScene):
         self.protect_home_timer = QTimer()
         self.protect_home_timer.setInterval(GameConfig.protect_home_time)
         self.protect_home_timer.timeout.connect(self.protect_home_timeout)
+        self.game_over_timer = QTimer()
+        self.game_over_timer.setInterval(20)
+        self.game_over_timer.timeout.connect(self.game_over_animation)
+        self.game_over_text_item = None
 
     def start(self):
         self.started = True
@@ -287,7 +291,7 @@ class GameScene(QGraphicsScene):
                       and self.tank2 is None
                       and self.main_window.data.player_2_lives == 0)
                      or self.main_window.data.game_type == GameType.ONE_PLAYER)):
-            self.main_window.game_over()
+            self.game_over()
 
     def boom_animation(self):
         for boom in self.booms[::-1]:
@@ -362,10 +366,42 @@ class GameScene(QGraphicsScene):
         self.main_window.data.stage += 1
         self.main_window.start_stage_animation()
 
+    def game_over(self):
+        if self.tank1 is not None:
+            self.tank1.move_timer.stop()
+        if self.tank2 is not None:
+            self.tank2.move_timer.stop()
+        self.game_over_text_item = QGraphicsTextItem('GAME OVER')
+        font = QFont()
+        font.setPointSize(28)
+        font.setBold(True)
+        self.game_over_text_item.setFont(font)
+        self.game_over_text_item.setDefaultTextColor(Qt.white)
+        self.game_over_text_item.setX((content_width - self.game_over_text_item.boundingRect().width()) // 2)
+        self.game_over_text_item.setY(content_height)
+        self.addItem(self.game_over_text_item)
+        self.game_over_timer.start()
+
+    def game_over_animation(self):
+        speed = -2
+        end_y = (content_height - self.game_over_text_item.boundingRect().height()) // 2
+        if self.game_over_text_item.y() + speed > end_y:
+            self.game_over_text_item.moveBy(0, speed)
+        else:
+            self.game_over_text_item.setY(end_y)
+            self.game_over_timer.stop()
+            self.main_window.game_over()
+
     def destroy(self):
         if self.tank1 is not None:
+            self.tank1.move_timer.stop()
+            self.tank1.protect_timer.stop()
+            self.tank1.protect_animation_timer.stop()
             self.removeItem(self.tank1)
         if self.tank2 is not None:
+            self.tank2.move_timer.stop()
+            self.tank2.protect_timer.stop()
+            self.tank2.protect_animation_timer.stop()
             self.removeItem(self.tank2)
         for e in self.enemies:
             self.removeItem(e)

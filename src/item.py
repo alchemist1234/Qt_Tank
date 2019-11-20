@@ -42,6 +42,11 @@ class HomeItem(QGraphicsPixmapItem):
         self.setX(cube_size * GameConfig.home_area()[1])
         self.setY(cube_size * GameConfig.home_area()[0])
 
+    def destroy(self):
+        png = QPixmap('../images/home_destroyed.png').scaled(cube_size, cube_size)
+        self.setPixmap(png)
+        self.scene().game_over()
+
 
 class TankItem(QGraphicsPixmapItem):
     def __init__(self, tank, direction: Direction):
@@ -343,6 +348,9 @@ class AmmoItem(QGraphicsPixmapItem):
                     item.destroy()
                 destroy = True
             if isinstance(item, AmmoItem):
+                destroy = True
+                item.destroy()
+            if isinstance(item, HomeItem):
                 destroy = True
                 item.destroy()
         if destroy:
